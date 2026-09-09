@@ -4,17 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>RoFlix - Xem Phim Trực Tuyến Miễn Phí Chất Lượng Cao</title>
+    <title>RoFlix Pro - Xem Phim Trực Tuyến Miễn Phí Chất Lượng Cao</title>
     
-    <meta name="title" content="RoFlix - Nền Tảng Xem Phim Trực Tuyến Hàng Đầu">
+    <meta name="title" content="RoFlix Pro - Nền Tảng Xem Phim Trực Tuyến Hàng Đầu">
     <meta name="description" content="Xem phim online chất lượng cao HD/4K miễn phí, cập nhật liên tục các bộ phim hot nhất.">
     <meta name="keywords" content="xem phim, phim online, phim hay, xem phim miễn phí, roflix, movies">
-    <meta name="author" content="RoFlix Enterprise Development Team">
+    <meta name="author" content="RoFlix Enterprise">
     <meta name="robots" content="index, follow">
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://roflix.local/">
-    <meta property="og:title" content="RoFlix - Xem Phim Trực Tuyến">
+    <meta property="og:title" content="RoFlix Pro - Xem Phim Trực Tuyến">
     <meta property="og:description" content="Xem phim online chất lượng cao HD/4K miễn phí.">
     <meta property="og:image" content="https://image.tmdb.org/t/p/original/8cdWjvZQUxUj6l1O3lB1K4G5H7J.jpg">
 
@@ -1956,6 +1956,195 @@
             margin-bottom: 0;
         }
 
+        /* ===== ROFLIX PRO - TÍNH NĂNG MỚI ===== */
+        .country-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 4px 0 12px;
+        }
+        .country-pill {
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: rgba(255,255,255,0.05);
+            color: #9ca3af;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .country-pill:hover {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            transform: translateY(-1px);
+        }
+        .country-pill.active {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+        .country-pill .flag { font-size: 1rem; }
+
+        .btn-continue {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 16px;
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            color: white;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-continue:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+        }
+        .btn-continue i { font-size: 0.7rem; }
+
+        .notif-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #090a0f;
+        }
+        .light-theme .notif-badge { border-color: #f4f5f9; }
+
+        .notification-panel {
+            position: fixed;
+            top: 68px;
+            right: 12px;
+            z-index: 60;
+            width: 340px;
+            max-height: 70vh;
+            overflow-y: auto;
+            background: rgba(18, 20, 29, 0.92);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(245, 158, 11, 0.1);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            transform: translateY(-10px) scale(0.95);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .notification-panel.open {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            visibility: visible;
+        }
+        .notification-panel .notif-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .notification-panel .notif-title i { color: #f59e0b; }
+        .notification-panel .notif-item {
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.04);
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .notification-panel .notif-item:hover {
+            background: rgba(245, 158, 11, 0.06);
+            border-color: rgba(245, 158, 11, 0.15);
+        }
+        .notification-panel .notif-item .notif-msg {
+            font-size: 0.8rem;
+            color: #d1d5db;
+        }
+        .notification-panel .notif-item .notif-time {
+            font-size: 0.65rem;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        .notification-panel .notif-empty {
+            text-align: center;
+            padding: 20px 0;
+            color: #6b7280;
+            font-size: 0.8rem;
+        }
+        .notif-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #f59e0b;
+            margin-right: 6px;
+            flex-shrink: 0;
+        }
+
+        .spinner-pro {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(245, 158, 11, 0.15);
+            border-top-color: #f59e0b;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .toast-pro {
+            background: rgba(18, 20, 29, 0.92);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(245, 158, 11, 0.15);
+            border-radius: 14px;
+            padding: 14px 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            transform: translateX(120%);
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-width: 400px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .toast-pro.show {
+            transform: translateX(0);
+        }
+        .toast-pro .toast-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 640px) {
+            .country-filter { gap: 4px; }
+            .country-pill { padding: 4px 10px; font-size: 0.65rem; }
+            .notification-panel { width: 90%; right: 5%; top: 60px; max-height: 60vh; }
+        }
+
         @media (max-width: 480px) {
             .profile-info .profile-name {
                 font-size: 1.2rem !important;
@@ -2126,12 +2315,13 @@
                         <i class="fa-solid fa-play ml-1"></i>
                     </div>
                     <span class="text-4xl font-black tracking-wider text-white">Ro<span class="text-gradient">Flix</span></span>
+                    <span class="text-[10px] font-bold bg-gradient-to-r from-amber-500 to-purple-600 text-white px-2 py-0.5 rounded-full">PRO</span>
                 </div>
                 <h1 class="text-3xl md:text-4xl font-black text-white mb-4 leading-tight relative z-10">
                     Xem Phim Miễn Phí <span class="text-gradient-hero">Cực Nhanh</span>, Chất Lượng Cao Và Cập Nhật Liên Tục
                 </h1>
                 <p class="text-gray-400 text-sm md:text-base mb-8 leading-relaxed max-w-lg mx-auto relative z-10">
-                    Đang có các bộ phim mới nhất. Trải nghiệm ngay!
+                    Kho phim khổng lồ với 18.000+ bộ phim. Trải nghiệm ngay!
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center items-center relative z-10">
                     <button onclick="navigateTo('main-site')" class="w-full sm:w-auto bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-500 hover:to-yellow-700 text-gray-950 font-black px-10 py-4 rounded-xl text-lg shadow-xl shadow-amber-500/20 flex items-center justify-center gap-3 transition active:scale-95 btn-ripple btn-glow">
@@ -2161,6 +2351,7 @@
                                 <i class="fa-solid fa-play ml-0.5"></i>
                             </div>
                             <span>Ro<span class="text-gradient">Flix</span></span>
+                            <span class="text-[9px] font-bold bg-gradient-to-r from-amber-500 to-purple-600 text-white px-1.5 py-0.5 rounded-full ml-1">Pro</span>
                         </a>
 
                         <nav class="hidden lg:flex items-center gap-1 text-sm font-medium">
@@ -2256,13 +2447,17 @@
                                 <i class="fa-solid fa-bookmark text-xs"></i>
                                 <span>Yêu Thích</span>
                             </a>
+                            <a href="#" onclick="showContinueWatching(); return false;" class="nav-link-ios text-purple-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-clock-rotate-left text-xs"></i>
+                                <span>Tiếp tục</span>
+                            </a>
                         </nav>
                     </div>
 
                     <div class="flex items-center gap-3 sm:gap-4">
                         <div class="search-ios hidden sm:flex">
                             <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                            <input id="search-input" oninput="handleSearch()" type="text" placeholder="Tìm kiếm phim...">
+                            <input id="search-input" oninput="handleSearch()" type="text" placeholder="Tìm kiếm phim..." title="Ctrl+K để tìm nhanh">
                         </div>
 
                         <div class="search-ios search-ios-mobile flex sm:hidden">
@@ -2273,6 +2468,32 @@
                         <button onclick="toggleTheme()" title="Đổi giao diện" class="w-9 h-9 rounded-full flex items-center justify-center border border-gray-700 bg-gray-900/80 text-amber-400 hover:border-amber-500 transition hover:scale-105 active:scale-95">
                             <i id="theme-icon" class="fa-solid fa-moon text-sm"></i>
                         </button>
+
+                        <!-- ===== Nút Xem tiếp và Thông báo ===== -->
+                        <div class="flex items-center gap-2">
+                            <button onclick="showContinueWatching()" class="btn-continue hidden sm:flex" title="Tiếp tục xem">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                                <span>Tiếp tục</span>
+                            </button>
+                            
+                            <div class="relative">
+                                <button onclick="toggleNotification()" class="w-9 h-9 rounded-full flex items-center justify-center border border-gray-700 bg-gray-900/80 text-gray-400 hover:border-amber-500 hover:text-amber-400 transition relative">
+                                    <i class="fa-solid fa-bell text-sm"></i>
+                                    <span id="notif-badge" class="notif-badge hidden">0</span>
+                                </button>
+                                
+                                <!-- Notification Panel -->
+                                <div id="notification-panel" class="notification-panel">
+                                    <div class="notif-title">
+                                        <i class="fa-solid fa-bell"></i> Thông báo
+                                        <span id="notif-count" class="text-xs text-gray-500 ml-auto">0</span>
+                                    </div>
+                                    <div id="notification-list">
+                                        <div class="notif-empty">📭 Chưa có thông báo</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         <div id="user-nav-container">
                             <button onclick="openAuthModal('login')" class="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-gray-950 font-extrabold px-4 py-2 rounded-full text-xs flex items-center gap-2 shadow-md transition active:scale-95 btn-ripple">
@@ -2342,6 +2563,7 @@
                     </div>
                     <div class="pt-2 border-t border-gray-800/80 space-y-2">
                         <a href="#" onclick="showFavorites(); closeMobileMenu(); return false;" class="block py-1.5 text-amber-400"><i class="fa-solid fa-bookmark mr-2"></i>Phim Yêu Thích</a>
+                        <a href="#" onclick="showContinueWatching(); closeMobileMenu(); return false;" class="block py-1.5 text-purple-400"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Tiếp tục xem</a>
                     </div>
                     <div class="pt-2 border-t border-gray-800/80">
                         <a href="#" onclick="navigateToProfile(); closeMobileMenu(); return false;" class="block py-1.5 text-amber-400"><i class="fa-solid fa-user mr-2"></i>Hồ sơ</a>
@@ -2383,6 +2605,36 @@
                         </button>
                     </div>
                     <div class="hero-dots" id="hero-dots"></div>
+                </div>
+            </section>
+
+            <!-- ===== BỘ LỌC THEO QUỐC GIA ===== -->
+            <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-4">
+                <div class="country-filter" id="country-filter">
+                    <button class="country-pill active" data-country="" onclick="filterByCountry('', 'Tất cả')">
+                        <span class="flag">🌍</span> Tất cả
+                    </button>
+                    <button class="country-pill" data-country="au-my" onclick="filterByCountry('au-my', 'Âu Mỹ')">
+                        <span class="flag">🇺🇸</span> Âu Mỹ
+                    </button>
+                    <button class="country-pill" data-country="han-quoc" onclick="filterByCountry('han-quoc', 'Hàn Quốc')">
+                        <span class="flag">🇰🇷</span> Hàn Quốc
+                    </button>
+                    <button class="country-pill" data-country="trung-quoc" onclick="filterByCountry('trung-quoc', 'Trung Quốc')">
+                        <span class="flag">🇨🇳</span> Trung Quốc
+                    </button>
+                    <button class="country-pill" data-country="nhat-ban" onclick="filterByCountry('nhat-ban', 'Nhật Bản')">
+                        <span class="flag">🇯🇵</span> Nhật Bản
+                    </button>
+                    <button class="country-pill" data-country="thai-lan" onclick="filterByCountry('thai-lan', 'Thái Lan')">
+                        <span class="flag">🇹🇭</span> Thái Lan
+                    </button>
+                    <button class="country-pill" data-country="an-do" onclick="filterByCountry('an-do', 'Ấn Độ')">
+                        <span class="flag">🇮🇳</span> Ấn Độ
+                    </button>
+                    <button class="country-pill" data-country="viet-nam" onclick="filterByCountry('viet-nam', 'Việt Nam')">
+                        <span class="flag">🇻🇳</span> Việt Nam
+                    </button>
                 </div>
             </section>
 
@@ -2544,7 +2796,6 @@
 
         <!-- ===== PROFILE PAGE ===== -->
         <div id="view-profile-page" class="page-view hidden-view min-h-screen py-8">
-            <!-- ... giữ nguyên phần profile như cũ ... -->
             <div class="profile-container">
                 <button onclick="navigateTo('main-site')" class="back-to-home-btn px-4 py-2 rounded-xl bg-gray-900 border border-gray-800 text-sm font-bold inline-flex items-center gap-2 hover:border-amber-500 hover:text-amber-400 transition btn-ripple">
                     <i class="fa-solid fa-arrow-left"></i>
@@ -2858,7 +3109,7 @@
 
     <script>
         // ============================================================
-        // CẤU HÌNH API VSMOV - KHÔNG DÙNG YOUTUBE
+        // CẤU HÌNH API VSMOV
         // ============================================================
         const API_BASE = 'https://vsmov.com/api';
         const ITEMS_PER_PAGE = 24;
@@ -2866,13 +3117,13 @@
         let totalPages = 1;
         let searchKeyword = '';
         let currentSlug = '';
-        let currentListEndpoint = 'phim-moi-cap-nhat'; // endpoint danh-sach hiện tại
-        let currentGenreSlug = ''; // /api/the-loai/{slug}
-        let currentCountrySlug = ''; // /api/quoc-gia/{slug}
-        let homePriorityMode = true; // trang chủ ưu tiên Âu Mỹ + Hàn
+        let currentListEndpoint = 'phim-moi-cap-nhat';
+        let currentGenreSlug = '';
+        let currentCountrySlug = '';
+        let homePriorityMode = true;
         let totalItems = 0;
         let searchTimeout = null;
-        let currentEpisodeList = []; // [{name, link}] cho trang phát
+        let currentEpisodeList = [];
         let currentMovieTitle = '';
 
         // ============================================================
@@ -2892,7 +3143,6 @@
 
         async function fetchMovies(page = 1) {
             try {
-                // Trang chủ: ưu tiên Âu Mỹ + Hàn Quốc (ẩn phim Trung khỏi feed mặc định)
                 if (homePriorityMode && !searchKeyword && !currentGenreSlug && !currentCountrySlug
                     && currentListEndpoint === 'phim-moi-cap-nhat') {
                     return await fetchHomePriorityMovies(page);
@@ -2934,7 +3184,6 @@
         }
 
         async function fetchHomePriorityMovies(page = 1) {
-            // Xen kẽ Âu Mỹ + Hàn; Trung Quốc xếp sau (không đưa vào feed trang chủ)
             const [auRes, krRes] = await Promise.all([
                 fetch(`${API_BASE}/quoc-gia/au-my?page=${page}`),
                 fetch(`${API_BASE}/quoc-gia/han-quoc?page=${page}`)
@@ -2947,7 +3196,6 @@
             const au = (auData.items || []).filter(m => pickPoster(m));
             const kr = (krData.items || []).filter(m => pickPoster(m));
 
-            // Xen kẽ 2 Âu Mỹ : 1 Hàn
             const merged = [];
             let i = 0, j = 0;
             while (i < au.length || j < kr.length) {
@@ -2965,28 +3213,11 @@
             return merged;
         }
 
-        function filterByCountry(slug, title) {
-            searchKeyword = '';
-            currentGenreSlug = '';
-            currentCountrySlug = slug;
-            homePriorityMode = false;
-            currentListEndpoint = 'phim-moi-cap-nhat';
-            const titleEl = document.getElementById('list-title');
-            if (titleEl) titleEl.textContent = title || slug;
-            const si = document.getElementById('search-input');
-            const sm = document.getElementById('search-input-mobile');
-            if (si) si.value = '';
-            if (sm) sm.value = '';
-            renderMoviesFromAPI(1);
-            navigateTo('main-site');
-        }
-
         async function fetchMovieDetail(slug) {
             try {
                 const response = await fetch(`${API_BASE}/phim/${slug}`);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
-                // VSMOV: { status, movie, episodes }
                 const movie = data.movie || data.data || data;
                 if (data.episodes && !movie.episodes) {
                     movie.episodes = data.episodes;
@@ -3333,7 +3564,6 @@
         // PHÁT PHIM
         // ============================================================
         function playMovie(slug) {
-            // Mở chi tiết rồi tự phát tập đầu (nếu có)
             (async () => {
                 await viewMovieDetail(slug);
                 if (currentEpisodeList.length > 0) {
@@ -3373,10 +3603,10 @@
             if (titleEl) titleEl.textContent = `${title} - ${ep.name}`;
             renderPlayEpisodeGrid(index);
             navigateTo('play-page');
+            saveWatchHistory(currentSlug || 'unknown', index, 0);
         }
 
         function playMovieByLink(link, title, epName) {
-            // Giữ tương thích cũ
             if (!link) {
                 showToast('error', 'Lỗi', 'Không có link phát cho tập này!');
                 return;
@@ -3507,7 +3737,6 @@
                 return;
             }
             
-            // Lấy danh sách phim từ API và lọc theo slug yêu thích
             fetchMovies(1).then(movies => {
                 const filtered = movies.filter(m => favIds.includes(m.slug));
                 const mapped = filtered.map(m => mapMovieData(m));
@@ -3586,7 +3815,6 @@
             renderMoviesFromAPI(1);
         }
 
-        // Map filter UI -> endpoint VSMOV /api/danh-sach/{endpoint}
         const LIST_ENDPOINTS = {
             'phim-moi': 'phim-moi-cap-nhat',
             'phim-le': 'phim-le',
@@ -4510,7 +4738,6 @@
                 return;
             }
             
-            // Lấy danh sách phim yêu thích từ API
             fetchMovies(1).then(movies => {
                 const favMovies = movies.filter(m => favIds.includes(m.slug));
                 if (favMovies.length === 0) {
@@ -4546,7 +4773,6 @@
             const container = document.getElementById('history-list');
             if (!container) return;
             
-            // Lấy lịch sử xem từ localStorage (lưu slug)
             const history = JSON.parse(localStorage.getItem('roflix-watch-history') || '[]');
             
             if (history.length === 0) {
@@ -4560,7 +4786,6 @@
                 return;
             }
             
-            // Lấy thông tin chi tiết từng phim
             Promise.all(history.slice(0, 20).map(async (item) => {
                 const data = await fetchMovieDetail(item.slug);
                 return { ...item, data };
@@ -4771,7 +4996,6 @@
         // PARTICLES
         // ============================================================
         (function initParticles() {
-            // Phiên bản nhẹ: ít hạt, không vẽ đường nối O(n²), pause khi tab ẩn / mobile yếu
             const canvas = document.getElementById('particles-canvas');
             if (!canvas) return;
             const prefersReduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -4859,10 +5083,7 @@
         }
 
         // ============================================================
-        // WINDOW ONLOAD
-        // ============================================================
-        // ============================================================
-        // HERO SLIDER - giới thiệu phim xoay vòng (kiểu rổ phim)
+        // HERO SLIDER
         // ============================================================
         let heroSlides = [];
         let heroIndex = 0;
@@ -4875,13 +5096,11 @@
                 if (!res.ok) throw new Error('hero fetch failed');
                 const data = await res.json();
                 const items = data.items || data.data || [];
-                // Lấy tối đa 8 phim có poster
                 heroSlides = items
                     .map(mapMovieData)
                     .filter(m => m.slug && isValidPosterUrl(m.poster))
                     .slice(0, 8);
 
-                // Nếu list mỏng, bổ sung bằng tìm kiếm vài từ khóa hot
                 if (heroSlides.length < 4) {
                     const extra = await fetch(`${API_BASE}/tim-kiem?keyword=2024&page=1`);
                     if (extra.ok) {
@@ -4915,12 +5134,6 @@
             ).join('');
         }
 
-        function stripHtml(html) {
-            const d = document.createElement('div');
-            d.innerHTML = html || '';
-            return (d.textContent || d.innerText || '').replace(/\s+/g, ' ').trim();
-        }
-
         function showHeroSlide(index, animate = true) {
             if (!heroSlides.length) return;
             heroIndex = (index + heroSlides.length) % heroSlides.length;
@@ -4947,7 +5160,6 @@
                     hotEl.style.display = hot ? '' : 'none';
                 }
 
-                // Tách title: phần đầu gradient, phần còn lại
                 const title = m.title || 'Phim nổi bật';
                 const parts = title.split(/\s[-–—]\s/);
                 const mainEl = document.getElementById('hero-title-main');
@@ -5018,7 +5230,7 @@
         }
 
         // ============================================================
-        // BOTTOM BOARDS - Sôi nổi / Yêu thích / Thể loại / Bình luận
+        // BOTTOM BOARDS
         // ============================================================
         async function renderBottomBoards() {
             await Promise.all([
@@ -5063,15 +5275,13 @@
             const el = document.getElementById('bb-fav-list');
             if (!el) return;
             try {
-                const favIds = (typeof getFavorites === 'function') ? getFavorites() : [];
-                // Ưu tiên phim user đã yêu thích; thiếu thì lấy trang 2 làm "yêu thích giả lập"
+                const favIds = getFavorites();
                 let items = [];
                 if (favIds.length) {
                     const res = await fetch(`${API_BASE}/quoc-gia/au-my?page=1`);
                     const data = await res.json();
                     const all = (data.items || []).map(mapMovieData);
                     items = all.filter(m => favIds.includes(m.slug)).slice(0, 5);
-                    // bổ sung chi tiết từng slug còn thiếu (tối đa 5)
                     for (const slug of favIds) {
                         if (items.length >= 5) break;
                         if (items.find(x => x.slug === slug)) continue;
@@ -5125,7 +5335,6 @@
         function renderBbComments() {
             const el = document.getElementById('bb-comment-list');
             if (!el) return;
-            // Gom bình luận từ localStorage (roflix-comments)
             let all = [];
             try {
                 const raw = JSON.parse(localStorage.getItem('roflix-comments') || '{}');
@@ -5145,7 +5354,6 @@
             all = all.slice(0, 4);
 
             if (!all.length) {
-                // Demo placeholder khi chưa có comment thật
                 all = [
                     { user: 'RoFlix Fan', text: 'Phim hay quá!', movie: 'Chào mừng đến RoFlix', slug: '' },
                     { user: 'Wibu', text: 'Mong ra tập mới sớm', movie: 'Anime / Series', slug: '' }
@@ -5166,6 +5374,236 @@
             }).join('');
         }
 
+        // ============================================================
+        // ROFLIX PRO - TÍNH NĂNG MỚI
+        // ============================================================
+
+        // ===== 1. FILTER THEO QUỐC GIA =====
+        let currentCountry = '';
+
+        function filterByCountry(slug, title) {
+            currentCountry = slug;
+            
+            document.querySelectorAll('.country-pill').forEach(el => {
+                el.classList.toggle('active', el.dataset.country === slug);
+            });
+            
+            searchKeyword = '';
+            currentGenreSlug = '';
+            currentCountrySlug = slug;
+            homePriorityMode = !slug;
+            currentListEndpoint = 'phim-moi-cap-nhat';
+            
+            const titleEl = document.getElementById('list-title');
+            if (titleEl) titleEl.textContent = slug ? `🇨🇳 ${title}` : 'Phim nổi bật';
+            
+            renderMoviesFromAPI(1);
+            navigateTo('main-site');
+        }
+
+        // ===== 2. XEM TIẾP (CONTINUE WATCHING) =====
+        function showContinueWatching() {
+            const history = JSON.parse(localStorage.getItem('roflix-watch-history') || '[]');
+            if (history.length === 0) {
+                showToastPro('info', 'Chưa có phim', 'Bạn chưa xem phim nào, hãy bắt đầu ngay!');
+                return;
+            }
+            
+            const last = history[history.length - 1];
+            if (last && last.slug) {
+                showToastPro('info', '⏳ Đang tải', `Tiếp tục phim...`);
+                viewMovieDetail(last.slug);
+                setTimeout(() => {
+                    if (currentEpisodeList.length > 0) {
+                        const epIndex = Math.min((last.episode || 0), currentEpisodeList.length - 1);
+                        playMovieByIndex(epIndex);
+                    }
+                }, 2000);
+            } else {
+                showToastPro('error', 'Lỗi', 'Không tìm thấy phim đã xem');
+            }
+        }
+
+        // ===== 3. THÔNG BÁO (NOTIFICATION) =====
+        let notifications = JSON.parse(localStorage.getItem('roflix-notifications') || '[]');
+
+        function addNotification(title, message, type = 'info') {
+            const icons = { success: '✅', error: '❌', info: '📢', warning: '⚠️' };
+            notifications.unshift({
+                id: Date.now(),
+                title: title,
+                message: message,
+                type: type,
+                icon: icons[type] || '📢',
+                time: new Date().toISOString(),
+                read: false
+            });
+            if (notifications.length > 50) notifications = notifications.slice(0, 50);
+            localStorage.setItem('roflix-notifications', JSON.stringify(notifications));
+            updateNotificationBadge();
+            renderNotifications();
+            showToastPro(type, title, message);
+        }
+
+        function updateNotificationBadge() {
+            const unread = notifications.filter(n => !n.read).length;
+            const badge = document.getElementById('notif-badge');
+            if (badge) {
+                if (unread > 0) {
+                    badge.textContent = unread > 9 ? '9+' : unread;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
+            const countEl = document.getElementById('notif-count');
+            if (countEl) countEl.textContent = unread > 0 ? `${unread} chưa đọc` : '0';
+        }
+
+        function renderNotifications() {
+            const list = document.getElementById('notification-list');
+            if (!list) return;
+            if (notifications.length === 0) {
+                list.innerHTML = '<div class="notif-empty">📭 Chưa có thông báo</div>';
+                return;
+            }
+            list.innerHTML = notifications.slice(0, 15).map(n => `
+                <div class="notif-item ${n.read ? '' : 'border-amber-500/20 bg-amber-500/5'}" onclick="markNotificationRead('${n.id}')">
+                    <div class="flex items-start gap-2">
+                        <span class="text-base">${n.icon || '📢'}</span>
+                        <div class="flex-1 min-w-0">
+                            <div class="notif-msg">${escapeHtml(n.message)}</div>
+                            <div class="notif-time">${new Date(n.time).toLocaleString('vi-VN')}</div>
+                        </div>
+                        ${!n.read ? '<span class="notif-dot"></span>' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function markNotificationRead(id) {
+            const notif = notifications.find(n => String(n.id) === String(id));
+            if (notif) notif.read = true;
+            localStorage.setItem('roflix-notifications', JSON.stringify(notifications));
+            updateNotificationBadge();
+            renderNotifications();
+        }
+
+        function toggleNotification() {
+            const panel = document.getElementById('notification-panel');
+            if (panel) {
+                panel.classList.toggle('open');
+                if (panel.classList.contains('open')) {
+                    notifications.forEach(n => n.read = true);
+                    localStorage.setItem('roflix-notifications', JSON.stringify(notifications));
+                    updateNotificationBadge();
+                    renderNotifications();
+                }
+            }
+        }
+
+        document.addEventListener('click', function(e) {
+            const panel = document.getElementById('notification-panel');
+            const btn = e.target.closest('[onclick="toggleNotification()"]') || e.target.closest('.fa-bell')?.parentElement;
+            if (panel && panel.classList.contains('open') && !panel.contains(e.target) && !btn) {
+                panel.classList.remove('open');
+            }
+        });
+
+        // ===== 4. TOAST PRO =====
+        function showToastPro(type, title, message) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            
+            const colors = {
+                success: 'bg-green-500/20 text-green-400',
+                error: 'bg-red-500/20 text-red-400',
+                info: 'bg-blue-500/20 text-blue-400',
+                warning: 'bg-yellow-500/20 text-yellow-400'
+            };
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                info: 'fa-info-circle',
+                warning: 'fa-exclamation-triangle'
+            };
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast-pro show';
+            toast.innerHTML = `
+                <div class="toast-icon ${colors[type] || colors.info}">
+                    <i class="fa-solid ${icons[type] || icons.info}"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm font-bold text-white">${escapeHtml(title)}</div>
+                    <div class="text-xs text-gray-400">${escapeHtml(message)}</div>
+                </div>
+                <button onclick="this.closest('.toast-pro').remove()" class="text-gray-500 hover:text-white transition flex-shrink-0">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 4000);
+        }
+
+        // ===== 5. KIỂM TRA PHIM MỚI =====
+        let checkedSlugs = new Set();
+
+        async function checkNewMovies() {
+            try {
+                const res = await fetch(`${API_BASE}/danh-sach/phim-moi-cap-nhat?page=1`);
+                const data = await res.json();
+                const movies = data.items || data.data || [];
+                const newMovies = movies.filter(m => {
+                    const slug = m.slug || m._id || '';
+                    if (!slug || checkedSlugs.has(slug)) return false;
+                    checkedSlugs.add(slug);
+                    return true;
+                });
+                if (newMovies.length > 0) {
+                    addNotification('🎬 Phim mới!', `Có ${newMovies.length} bộ phim mới vừa cập nhật.`, 'success');
+                }
+            } catch (e) {}
+        }
+
+        // ===== 6. SAVE WATCH HISTORY =====
+        function saveWatchHistory(slug, episode, progress) {
+            const history = JSON.parse(localStorage.getItem('roflix-watch-history') || '[]');
+            const existing = history.find(h => h.slug === slug);
+            if (existing) {
+                existing.episode = episode;
+                existing.progress = progress;
+                existing.timestamp = Date.now();
+            } else {
+                history.push({ slug, episode, progress, timestamp: Date.now() });
+            }
+            if (history.length > 50) history.splice(0, history.length - 50);
+            localStorage.setItem('roflix-watch-history', JSON.stringify(history));
+        }
+
+        // ===== 7. KEYBOARD SHORTCUT =====
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                const search = document.getElementById('search-input');
+                if (search) search.focus();
+            }
+            if (e.key === 'Escape') {
+                const panel = document.getElementById('notification-panel');
+                if (panel) panel.classList.remove('open');
+            }
+        });
+
+        // ===== 8. INIT - KIỂM TRA PHIM MỚI =====
+        setInterval(checkNewMovies, 300000);
+        setTimeout(checkNewMovies, 10000);
+
+        // ============================================================
+        // WINDOW ONLOAD
+        // ============================================================
         window.onload = function () {
             if (localStorage.getItem('roflix-theme') === 'light') {
                 document.body.classList.add('light-theme');
@@ -5224,8 +5662,9 @@
             
             renderLeaderboard();
             
-            console.log('🎬 RoFlix V3 - Tích hợp API VSMOV');
+            console.log('🔥 RoFlix Pro - Đã nâng cấp thành công!');
             console.log('📦 Nguồn dữ liệu: VSMOV.COM');
+            console.log('✨ Tính năng mới: Lọc quốc gia, Xem tiếp, Thông báo, Phím tắt');
         };
     </script>
 </body>
