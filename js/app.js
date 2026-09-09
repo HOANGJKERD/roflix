@@ -370,4 +370,72 @@ async function viewMovieDetail(slug) {
                     <p class="text-sm leading-relaxed text-gray-300">${escapeHtml(movie.summary || 'Chưa có tóm tắt')}</p>
                 </div>
                 
-                ${directors
+                ${directorsHTML}
+                ${actorsHTML}
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs border-t border-gray-800 pt-4">
+                    <div><p class="text-gray-500">Trạng thái</p><p class="text-amber-500 font-bold mt-1">${movie.status}</p></div>
+                    <div><p class="text-gray-500">Số tập</p><p class="font-bold text-white mt-1">${movie.episode_total || 0}</p></div>
+                    <div><p class="text-gray-500">Lượt xem</p><p class="font-bold text-white mt-1">${movie.views}</p></div>
+                    <div><p class="text-gray-500">Chất lượng</p><p class="font-bold text-white mt-1">${movie.quality}</p></div>
+                </div>
+                
+                ${episodesHTML}
+                
+                ${movie.trailer ? `
+                    <div>
+                        <h4 class="text-sm font-bold text-gray-400 mb-2">🎬 Trailer:</h4>
+                        <a href="${movie.trailer}" target="_blank" class="text-amber-500 hover:underline text-sm">Xem trailer</a>
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+        
+        <div class="glass-premium p-5 md:p-8 rounded-3xl space-y-6 mt-8">
+            <h3 class="text-lg font-bold flex items-center space-x-2 text-white">
+                <span class="w-1.5 h-5 bg-gradient-to-b from-amber-500 to-purple-500 rounded-full"></span>
+                <span>Bình Luận</span>
+            </h3>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input id="comment-user" type="text" value="${escapeHtml(getCurrentUser()?.name || '')}" placeholder="Tên của bạn..." class="bg-gray-900 border border-gray-800 text-sm px-4 py-3 rounded-xl sm:w-1/4 focus:outline-none focus:border-amber-500 text-white">
+                <input id="comment-input" type="text" placeholder="Nhập nội dung bình luận..." class="bg-gray-900 border border-gray-800 text-sm px-4 py-3 rounded-xl flex-1 focus:outline-none focus:border-amber-500 text-white">
+                <button onclick="submitComment('${slug}')" class="bg-amber-500 text-black font-extrabold px-7 py-3 rounded-xl hover:bg-amber-600 transition btn-ripple">Đăng</button>
+            </div>
+            <div id="comments-container" class="space-y-4 pt-3"></div>
+        </div>
+    `;
+    
+    navigateTo('detail');
+    setTimeout(() => updateRatingDisplay(slug), 100);
+    renderComments(slug);
+}
+
+// ===== APP INIT =====
+window.onload = function () {
+    // Theme
+    if (localStorage.getItem('roflix-theme') === 'light') {
+        document.body.classList.add('light-theme');
+        document.documentElement.classList.remove('dark');
+        updateThemeIcon(true);
+    }
+    
+    // Init profile
+    initProfile();
+    
+    // Load dữ liệu
+    if (typeof loadMovies === 'function') {
+        loadMovies();
+    } else {
+        console.warn('loadMovies is not defined yet');
+    }
+    
+    initHeroSlider();
+    renderBottomBoards();
+    checkUserAuthStatus();
+    checkDailyLogin();
+    
+    // Render leaderboard
+    renderLeaderboard();
+    
+    console.log('🎬 RoFlix V3 - Đã khởi động thành công!');
+};
