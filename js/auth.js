@@ -5,12 +5,17 @@
 function openAuthModal(mode = 'login') {
     switchAuthMode(mode);
     const modal = document.getElementById('auth-modal');
+    if (!modal) {
+        console.warn('Auth modal not found');
+        return;
+    }
     modal.classList.remove('hidden');
     setTimeout(() => modal.classList.add('open'), 10);
 }
 
 function closeAuthModal() {
     const modal = document.getElementById('auth-modal');
+    if (!modal) return;
     modal.classList.remove('open');
     setTimeout(() => modal.classList.add('hidden'), 400);
 }
@@ -18,6 +23,13 @@ function closeAuthModal() {
 function switchAuthMode(mode) {
     const loginBox = document.getElementById('login-form-box');
     const regBox = document.getElementById('register-form-box');
+    
+    // Kiểm tra tồn tại
+    if (!loginBox || !regBox) {
+        console.warn('Auth form elements not found');
+        return;
+    }
+    
     if (mode === 'register') {
         loginBox.classList.add('hidden');
         regBox.classList.remove('hidden');
@@ -33,10 +45,10 @@ function getUsersFromStorage() {
 
 function handleRegister(e) {
     e.preventDefault();
-    const name = document.getElementById('reg-name').value.trim();
-    const email = document.getElementById('reg-email').value.trim();
-    const pwd = document.getElementById('reg-password').value;
-    const confirm = document.getElementById('reg-confirm').value;
+    const name = document.getElementById('reg-name')?.value?.trim() || '';
+    const email = document.getElementById('reg-email')?.value?.trim() || '';
+    const pwd = document.getElementById('reg-password')?.value || '';
+    const confirm = document.getElementById('reg-confirm')?.value || '';
 
     if (pwd !== confirm) {
         showToast('error', 'Lỗi', 'Mật khẩu xác nhận không khớp!');
@@ -44,6 +56,10 @@ function handleRegister(e) {
     }
     if (pwd.length < 6) {
         showToast('error', 'Lỗi', 'Mật khẩu phải có ít nhất 6 ký tự!');
+        return;
+    }
+    if (!name || !email) {
+        showToast('error', 'Lỗi', 'Vui lòng nhập đầy đủ thông tin!');
         return;
     }
 
@@ -69,8 +85,13 @@ function handleRegister(e) {
 
 function handleLogin(e) {
     e.preventDefault();
-    const input = document.getElementById('login-email').value.trim();
-    const pwd = document.getElementById('login-password').value;
+    const input = document.getElementById('login-email')?.value?.trim() || '';
+    const pwd = document.getElementById('login-password')?.value || '';
+
+    if (!input || !pwd) {
+        showToast('error', 'Lỗi', 'Vui lòng nhập email và mật khẩu!');
+        return;
+    }
 
     const users = getUsersFromStorage();
     const found = users.find(u => (u.email === input || u.name === input) && u.password === pwd);
@@ -103,6 +124,12 @@ function handleLogout() {
 function checkUserAuthStatus() {
     const user = getCurrentUser();
     const navContainer = document.getElementById('user-nav-container');
+    
+    // Kiểm tra tồn tại
+    if (!navContainer) {
+        console.warn('user-nav-container not found');
+        return;
+    }
 
     if (user) {
         navContainer.innerHTML = `
