@@ -2,6 +2,11 @@
 // APP INITIALIZATION
 // ============================================================
 
+// Biến toàn cục
+let currentSlug = '';
+let currentEpisodeList = [];
+let currentMovieTitle = '';
+
 // ===== PARTICLES =====
 (function initParticles() {
     const canvas = document.getElementById('particles-canvas');
@@ -199,7 +204,7 @@ function heroGoTo(i) {
 function startHeroAutoplay() {
     stopHeroAutoplay();
     if (heroSlides.length < 2) return;
-    heroTimer = setInterval(() => showHeroSlide(heroIndex + 1), CONFIG.HERO_INTERVAL);
+    heroTimer = setInterval(() => showHeroSlide(heroIndex + 1), CONFIG.HERO_INTERVAL || 7000);
 }
 
 function stopHeroAutoplay() {
@@ -207,107 +212,6 @@ function stopHeroAutoplay() {
         clearInterval(heroTimer);
         heroTimer = null;
     }
-}
-
-// ===== BOTTOM BOARDS =====
-async function renderBottomBoards() {
-    await Promise.all([
-        renderBbHot(),
-        renderBbFav(),
-        renderBbGenres(),
-        renderBbComments()
-    ]);
-}
-
-function bbMovieRow(m, rank, trendUp = true) {
-    const poster = m.poster || m.thumb || 'https://placehold.co/34x48/1a1a1a/666?text=-';
-    const trend = trendUp
-        ? '<i class="fa-solid fa-arrow-trend-up bb-trend"></i>'
-        : '<i class="fa-solid fa-arrow-trend-down bb-trend down"></i>';
-    return `<li class="bb-item" onclick="viewMovieDetail('${m.slug}')">
-        <span class="bb-rank">${rank}</span>
-        ${trend}
-        <img class="bb-thumb" src="${poster}" alt="" loading="lazy" onerror="this.src='https://placehold.co/34x48/1a1a1a/666?text=-'">
-        <span class="bb-name">${escapeHtml(m.title || m.name || 'Phim')}</span>
-    </li>`;
-}
-
-async function renderBbHot() {
-    const el = document.getElementById('bb-hot-list');
-    if (!el) return;
-    try {
-        const res = await fetch(`${CONFIG.API_BASE}/quoc-gia/au-my?page=1`);
-        const data = await res.json();
-        const items = (data.items || []).slice(0, 5).map(mapMovieData);
-        if (!items.length) {
-            el.innerHTML = '<li class="text-xs text-gray-500 px-2">Chưa có dữ liệu</li>';
-            return;
-        }
-        el.innerHTML = items.map((m, i) => bbMovieRow(m, i + 1, true)).join('');
-    } catch (e) {
-        el.innerHTML = '<li class="text-xs text-gray-500 px-2">Không tải được</li>';
-    }
-}
-
-async function renderBbFav() {
-    const el = document.getElementById('bb-fav-list');
-    if (!el) return;
-    try {
-        const favIds = getFavorites();
-        let items = [];
-        if (favIds.length) {
-            const res = await fetch(`${CONFIG.API_BASE}/quoc-gia/au-my?page=1`);
-            const data = await res.json();
-            const all = (data.items || []).map(mapMovieData);
-            items = all.filter(m => favIds.includes(m.slug)).slice(0, 5);
-            for (const slug of favIds) {
-                if (items.length >= 5) break;
-                if (items.find(x => x.slug === slug)) continue;
-                try {
-                    const d = await fetchMovieDetail(slug);
-                    if (d) items.push(mapMovieData(d));
-                } catch (_) {}
-            }
-        }
-        if (items.length < 5) {
-            const res2 = await fetch(`${CONFIG.API_BASE}/danh-sach/phim-bo?page=1`);
-            const data2 = await res2.json();
-            const more = (data2.items || []).map(mapMovieData);
-            for (const m of more) {
-                if (items.length >= 5) break;
-                if (!items.find(x => x.slug === m.slug)) items.push(m);
-            }
-        }
-        if (!items.length) {
-            el.innerHTML = '<li class="text-xs text-gray-500 px-2">Chưa có phim yêu thích</li>';
-            return;
-        }
-        el.innerHTML = items.slice(0, 5).map((m, i) => bbMovieRow(m, i + 1, i % 2 === 0)).join('');
-    } catch (e) {
-        el.innerHTML = '<li class="text-xs text-gray-500 px-2">Không tải được</li>';
-    }
-}
-
-function renderBbGenres() {
-    const el = document.getElementById('bb-genre-list');
-    if (!el) return;
-    const hotGenres = [
-        { name: 'Chính kịch', slug: 'chinh-kich', color: 'linear-gradient(135deg,#7c3aed,#a78bfa)' },
-        { name: 'Tâm Lý', slug: null, color: 'linear-gradient(135deg,#2563eb,#60a5fa)', keyword: 'Tâm Lý' },
-        { name: 'Tình Cảm', slug: null, color: 'linear-gradient(135deg,#7c3aed,#c084fc)', keyword: 'Tình Cảm' },
-        { name: 'Hài Hước', slug: 'hai', color: 'linear-gradient(135deg,#65a30d,#a3e635)' },
-        { name: 'Phiêu Lưu', slug: 'phieu-luu', color: 'linear-gradient(135deg,#b45309,#fbbf24)' }
-    ];
-    el.innerHTML = hotGenres.map((g, i) => {
-        const onclick = g.slug
-            ? `filterByGenre('${g.slug}','${g.name}')`
-            : `filterBy('genre','${g.keyword || g.name}')`;
-        return `<button type="button" class="bb-genre-pill" style="background:${g.color}" onclick="${onclick}">
-            <span class="rank-ico">${i + 1}.</span>
-            <i class="fa-solid fa-arrow-trend-up" style="font-size:0.65rem"></i>
-            ${g.name}
-        </button>`;
-    }).join('');
 }
 
 // ===== SEARCH =====
@@ -318,17 +222,19 @@ function handleSearch() {
     searchTimeout = setTimeout(() => {
         const input = document.getElementById('search-input');
         const val = (input ? input.value : '').trim();
-        currentState.keyword = val;
-        currentState.genre = '';
-        currentState.country = '';
-        currentState.homePriority = !val;
-        currentState.favorites = false;
-        currentState.list = 'phim-moi-cap-nhat';
-        currentState.page = 1;
-        const titleEl = document.getElementById('list-title');
-        if (titleEl) titleEl.textContent = val ? `Kết quả: "${val}"` : 'Phim Âu Mỹ & Hàn nổi bật';
-        navigateTo('home');
-        loadMovies(currentState);
+        if (typeof currentState !== 'undefined') {
+            currentState.keyword = val;
+            currentState.genre = '';
+            currentState.country = '';
+            currentState.homePriority = !val;
+            currentState.favorites = false;
+            currentState.list = 'phim-moi-cap-nhat';
+            currentState.page = 1;
+            const titleEl = document.getElementById('list-title');
+            if (titleEl) titleEl.textContent = val ? `Kết quả: "${val}"` : 'Phim mới cập nhật';
+            navigateTo('home');
+            loadMovies(currentState);
+        }
     }, 400);
 }
 
@@ -337,24 +243,24 @@ function handleSearchMobile() {
     searchTimeout = setTimeout(() => {
         const input = document.getElementById('search-input-mobile');
         const val = (input ? input.value : '').trim();
-        currentState.keyword = val;
-        currentState.genre = '';
-        currentState.country = '';
-        currentState.homePriority = !val;
-        currentState.favorites = false;
-        currentState.list = 'phim-moi-cap-nhat';
-        currentState.page = 1;
-        const titleEl = document.getElementById('list-title');
-        if (titleEl) titleEl.textContent = val ? `Kết quả: "${val}"` : 'Phim Mới Cập Nhật';
-        closeMobileMenu();
-        navigateTo('home');
-        loadMovies(currentState);
+        if (typeof currentState !== 'undefined') {
+            currentState.keyword = val;
+            currentState.genre = '';
+            currentState.country = '';
+            currentState.homePriority = !val;
+            currentState.favorites = false;
+            currentState.list = 'phim-moi-cap-nhat';
+            currentState.page = 1;
+            const titleEl = document.getElementById('list-title');
+            if (titleEl) titleEl.textContent = val ? `Kết quả: "${val}"` : 'Phim mới cập nhật';
+            closeMobileMenu();
+            navigateTo('home');
+            loadMovies(currentState);
+        }
     }, 400);
 }
 
 // ===== VIEW MOVIE DETAIL =====
-let currentSlug = '';
-
 async function viewMovieDetail(slug) {
     if (!slug) {
         showToast('error', 'Lỗi', 'Không tìm thấy phim!');
@@ -414,7 +320,6 @@ async function viewMovieDetail(slug) {
         ? `<div class="flex flex-wrap gap-1"><span class="text-gray-500">Đạo diễn:</span> ${movie.directors.map(d => `<span class="text-xs bg-gray-800 px-2 py-1 rounded-full">${d}</span>`).join(' ')}</div>`
         : '';
     
-    // Hiển thị detail
     const container = document.getElementById('detail-content-container');
     if (!container) return;
     
@@ -465,69 +370,4 @@ async function viewMovieDetail(slug) {
                     <p class="text-sm leading-relaxed text-gray-300">${escapeHtml(movie.summary || 'Chưa có tóm tắt')}</p>
                 </div>
                 
-                ${directorsHTML}
-                ${actorsHTML}
-                
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs border-t border-gray-800 pt-4">
-                    <div><p class="text-gray-500">Trạng thái</p><p class="text-amber-500 font-bold mt-1">${movie.status}</p></div>
-                    <div><p class="text-gray-500">Số tập</p><p class="font-bold text-white mt-1">${movie.episode_total || 0}</p></div>
-                    <div><p class="text-gray-500">Lượt xem</p><p class="font-bold text-white mt-1">${movie.views}</p></div>
-                    <div><p class="text-gray-500">Chất lượng</p><p class="font-bold text-white mt-1">${movie.quality}</p></div>
-                </div>
-                
-                ${episodesHTML}
-                
-                ${movie.trailer ? `
-                    <div>
-                        <h4 class="text-sm font-bold text-gray-400 mb-2">🎬 Trailer:</h4>
-                        <a href="${movie.trailer}" target="_blank" class="text-amber-500 hover:underline text-sm">Xem trailer</a>
-                    </div>
-                ` : ''}
-            </div>
-        </div>
-        
-        <div class="glass-premium p-5 md:p-8 rounded-3xl space-y-6 mt-8">
-            <h3 class="text-lg font-bold flex items-center space-x-2 text-white">
-                <span class="w-1.5 h-5 bg-gradient-to-b from-amber-500 to-purple-500 rounded-full"></span>
-                <span>Bình Luận</span>
-            </h3>
-            <div class="flex flex-col sm:flex-row gap-3">
-                <input id="comment-user" type="text" value="${escapeHtml(getCurrentUser()?.name || '')}" placeholder="Tên của bạn..." class="bg-gray-900 border border-gray-800 text-sm px-4 py-3 rounded-xl sm:w-1/4 focus:outline-none focus:border-amber-500 text-white">
-                <input id="comment-input" type="text" placeholder="Nhập nội dung bình luận..." class="bg-gray-900 border border-gray-800 text-sm px-4 py-3 rounded-xl flex-1 focus:outline-none focus:border-amber-500 text-white">
-                <button onclick="submitComment('${slug}')" class="bg-amber-500 text-black font-extrabold px-7 py-3 rounded-xl hover:bg-amber-600 transition btn-ripple">Đăng</button>
-            </div>
-            <div id="comments-container" class="space-y-4 pt-3"></div>
-        </div>
-    `;
-    
-    navigateTo('detail');
-    setTimeout(() => updateRatingDisplay(slug), 100);
-    renderComments(slug);
-}
-
-// ===== APP INIT =====
-window.onload = function () {
-    // Theme
-    if (localStorage.getItem('roflix-theme') === 'light') {
-        document.body.classList.add('light-theme');
-        document.documentElement.classList.remove('dark');
-        updateThemeIcon(true);
-    }
-    
-    // Init profile
-    initProfile();
-    
-    // Load dữ liệu
-    loadMovies();
-    initHeroSlider();
-    renderBottomBoards();
-    checkUserAuthStatus();
-    checkDailyLogin();
-    
-    // Render leaderboard
-    renderLeaderboard();
-    
-    console.log('🎬 RoFlix V3 - Tách file thành công!');
-    console.log('📦 Cấu trúc module đã được tổ chức');
-    console.log('🔥 Sẵn sàng để up lên GitHub!');
-};
+                ${directors
