@@ -2,49 +2,26 @@
 <html lang="vi" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>RoFlix - Xem Phim Trực Tuyến Miễn Phí Chất Lượng Cao</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoFlix - Xem Phim Trực Tuyến</title>
     
-    <meta name="title" content="RoFlix - Nền Tảng Xem Phim Trực Tuyến Hàng Đầu">
-    <meta name="description" content="Xem phim online chất lượng cao HD/4K miễn phí, cập nhật liên tục các bộ phim hot nhất.">
-    <meta name="keywords" content="xem phim, phim online, phim hay, xem phim miễn phí, roflix, movies">
-    <meta name="author" content="RoFlix Enterprise">
-    <meta name="robots" content="index, follow">
-
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://roflix.local/">
-    <meta property="og:title" content="RoFlix - Xem Phim Trực Tuyến">
-    <meta property="og:description" content="Xem phim online chất lượng cao HD/4K miễn phí.">
-    <meta property="og:image" content="https://image.tmdb.org/t/p/original/8cdWjvZQUxUj6l1O3lB1K4G5H7J.jpg">
-
-    <!-- CSS -->
+    <!-- 1. Link tới các file CSS (kiểm tra đường dẫn) -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/themes.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/responsive.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Favicon -->
-    <link rel="shortcut icon" href="/assets/favicon.ico" type="image/x-icon">
+    <!-- 2. CDN bên ngoài (bắt buộc) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
-<body class="selection:bg-amber-500 selection:text-black">
-
-    <!-- Particles Canvas -->
-    <canvas id="particles-canvas"></canvas>
-
-    <!-- Toast Container -->
-    <div id="toast-container" class="fixed top-20 right-5 z-50 flex flex-col gap-3 pointer-events-none max-w-sm w-full"></div>
-    <div id="gem-fly-container"></div>
-
-    <!-- App Root -->
-    <div id="roflix-app-root" class="min-h-screen flex flex-col justify-between relative" style="z-index: 1;">
-        <!-- Content sẽ được render bằng JavaScript -->
+<body>
+    <div id="roflix-app-root">
+        <!-- Nội dung sẽ được JavaScript render vào đây -->
         <div id="app-content"></div>
     </div>
 
-    <!-- JavaScript -->
+    <!-- 3. Load các file JavaScript (theo đúng thứ tự) -->
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/api.js"></script>
