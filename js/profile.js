@@ -19,6 +19,30 @@ function saveProfile(data) {
     localStorage.setItem('roflix-profile', JSON.stringify(data));
 }
 
+function renderAchievements() {
+    const grid = document.getElementById('achievement-grid');
+    if (!grid) return;
+    
+    const unlocked = getAchievements();
+    
+    if (!ACHIEVEMENTS || ACHIEVEMENTS.length === 0) {
+        grid.innerHTML = '<p class="text-gray-500">Chưa có thành tựu</p>';
+        return;
+    }
+    
+    grid.innerHTML = ACHIEVEMENTS.map(ach => {
+        const isUnlocked = unlocked.find(u => u.id === ach.id);
+        return `
+            <div class="achievement-card ${isUnlocked ? 'unlocked' : 'locked'}">
+                <div class="ach-icon">${ach.icon}</div>
+                <div class="ach-name">${ach.name}</div>
+                <div class="ach-desc">${ach.desc}</div>
+                ${isUnlocked ? '<div style="color:#10b981; font-size:0.7rem; margin-top:4px;">✓ Đã đạt</div>' : ''}
+            </div>
+        `;
+    }).join('');
+}
+
 function renderProfile() {
     const profile = getProfile();
     const levelData = getLevelData();
@@ -97,9 +121,10 @@ function renderProfile() {
     const gachaGemCount = document.getElementById('gacha-gem-count');
     if (gachaGemCount) gachaGemCount.textContent = gems;
     
+    // Gọi các hàm render
     updateDailyQuest();
     renderCollection();
-    renderAchievements();
+    renderAchievements(); // Đã được định nghĩa ở trên
     renderFavoritesTab();
     renderHistoryTab();
     renderLeaderboard();
@@ -147,14 +172,37 @@ function openEditProfile() {
     if (bannerEl) bannerEl.value = profile.banner !== 'default' ? profile.banner : '';
     
     const modal = document.getElementById('edit-profile-modal');
-    modal.classList.remove('hidden');
-    setTimeout(() => modal.classList.add('open'), 10);
+    if (modal) {
+        modal.classList.remove('hidden');
+        setTimeout(() => modal.classList.add('open'), 10);
+    }
 }
 
 function closeEditProfile() {
     const modal = document.getElementById('edit-profile-modal');
-    modal.classList.remove('open');
-    setTimeout(() => modal.classList.add('hidden'), 400);
+    if (modal) {
+        modal.classList.remove('open');
+        setTimeout(() => modal.classList.add('hidden'), 400);
+    }
+}
+
+function resetProfile() {
+    if (!confirm('Bạn có chắc chắn muốn xóa toàn bộ dữ liệu? Hành động này không thể hoàn tác!')) return;
+    
+    localStorage.removeItem('roflix-profile');
+    localStorage.removeItem('roflix-level');
+    localStorage.removeItem('roflix-gem');
+    localStorage.removeItem('roflix-stats');
+    localStorage.removeItem('roflix-achievements');
+    localStorage.removeItem('roflix-cards');
+    localStorage.removeItem('roflix-daily');
+    localStorage.removeItem('roflix-ratings');
+    localStorage.removeItem('roflix-favs');
+    localStorage.removeItem('roflix-comments');
+    localStorage.removeItem('roflix-watch-history');
+    
+    showToast('success', '🗑️ Đã xóa!', 'Toàn bộ dữ liệu đã được xóa.');
+    setTimeout(() => window.location.reload(), 1000);
 }
 
 // Event listener cho form edit profile
@@ -205,22 +253,3 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-
-function resetProfile() {
-    if (!confirm('Bạn có chắc chắn muốn xóa toàn bộ dữ liệu? Hành động này không thể hoàn tác!')) return;
-    
-    localStorage.removeItem('roflix-profile');
-    localStorage.removeItem('roflix-level');
-    localStorage.removeItem('roflix-gem');
-    localStorage.removeItem('roflix-stats');
-    localStorage.removeItem('roflix-achievements');
-    localStorage.removeItem('roflix-cards');
-    localStorage.removeItem('roflix-daily');
-    localStorage.removeItem('roflix-ratings');
-    localStorage.removeItem('roflix-favs');
-    localStorage.removeItem('roflix-comments');
-    localStorage.removeItem('roflix-watch-history');
-    
-    showToast('success', '🗑️ Đã xóa!', 'Toàn bộ dữ liệu đã được xóa.');
-    setTimeout(() => window.location.reload(), 1000);
-}
