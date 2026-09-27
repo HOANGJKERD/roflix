@@ -111,6 +111,15 @@
             --ro-transition-slow: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             
             --ro-navbar-blur: 12px;
+
+            /* Liquid Glass */
+            --lg-blur: 24px;
+            --lg-saturate: 180%;
+            --lg-sheen: rgba(255, 255, 255, 0.10);
+            --lg-sheen-soft: rgba(255, 255, 255, 0.04);
+            --lg-edge: rgba(255, 255, 255, 0.14);
+            --lg-edge-soft: rgba(255, 255, 255, 0.06);
+            --lg-shadow: 0 20px 50px -18px rgba(0, 0, 0, 0.65), 0 2px 6px rgba(0, 0, 0, 0.25);
         }
 
         body.light-theme {
@@ -128,6 +137,12 @@
             --ro-primary-glow: rgba(245, 158, 11, 0.15);
             --ro-shadow-main: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
             --ro-shadow-ios: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(255, 255, 255, 0.8) inset;
+
+            --lg-sheen: rgba(255, 255, 255, 0.55);
+            --lg-sheen-soft: rgba(255, 255, 255, 0.25);
+            --lg-edge: rgba(255, 255, 255, 0.6);
+            --lg-edge-soft: rgba(0, 0, 0, 0.05);
+            --lg-shadow: 0 20px 45px -20px rgba(15, 23, 42, 0.25), 0 2px 6px rgba(15, 23, 42, 0.06);
         }
 
         *, *::before, *::after {
@@ -183,31 +198,48 @@
         }
 
         .glass-panel {
-            background: var(--ro-bg-surface);
+            position: relative;
+            background:
+                linear-gradient(180deg, var(--lg-sheen-soft), transparent 45%),
+                var(--ro-bg-surface);
             border: 1px solid var(--ro-border-color);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-saturate));
+            -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-saturate));
+            box-shadow: inset 0 1px 0 var(--lg-edge-soft);
         }
 
         .glass-header {
-            background: var(--ro-bg-header);
+            position: relative;
+            background:
+                linear-gradient(180deg, var(--lg-sheen-soft), transparent 60%),
+                var(--ro-bg-header);
             border-bottom: 1px solid var(--ro-border-color);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-saturate));
+            -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-saturate));
         }
 
         .glass-premium {
-            background: rgba(18, 20, 29, 0.65);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            position: relative;
+            background:
+                linear-gradient(155deg, var(--lg-sheen) 0%, transparent 28%),
+                rgba(18, 20, 29, 0.55);
+            backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-saturate));
+            -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-saturate));
+            border: 1px solid rgba(255, 255, 255, 0.10);
             border-radius: 24px;
-            box-shadow: var(--ro-shadow-ios);
+            box-shadow: var(--ro-shadow-ios), var(--lg-shadow), inset 0 1px 0 var(--lg-edge-soft);
             transition: all var(--ro-transition-normal);
         }
         .glass-premium:hover {
-            border-color: rgba(245, 158, 11, 0.15);
-            box-shadow: var(--ro-shadow-ios), 0 0 40px rgba(245, 158, 11, 0.05);
+            border-color: rgba(245, 158, 11, 0.25);
+            box-shadow: var(--ro-shadow-ios), var(--lg-shadow), inset 0 1px 0 var(--lg-edge-soft), 0 0 40px rgba(245, 158, 11, 0.08);
+            transform: translateY(-1px);
+        }
+        .light-theme .glass-premium {
+            background:
+                linear-gradient(155deg, var(--lg-sheen) 0%, transparent 32%),
+                rgba(255, 255, 255, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.7);
         }
 
         @keyframes fadeSlideIn {
@@ -341,14 +373,20 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(9, 10, 15, 0.8);
-            backdrop-filter: blur(var(--ro-navbar-blur)) saturate(180%);
-            -webkit-backdrop-filter: blur(var(--ro-navbar-blur)) saturate(180%);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 70%),
+                rgba(9, 10, 15, 0.72);
+            backdrop-filter: blur(calc(var(--ro-navbar-blur) + 12px)) saturate(200%);
+            -webkit-backdrop-filter: blur(calc(var(--ro-navbar-blur) + 12px)) saturate(200%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 12px 30px -20px rgba(0, 0, 0, 0.6);
         }
         .light-theme .header-ios {
-            background: rgba(255, 255, 255, 0.8);
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.6), transparent 70%),
+                rgba(255, 255, 255, 0.68);
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 12px 30px -20px rgba(15, 23, 42, 0.15);
         }
 
         .nav-link-ios {
@@ -356,11 +394,13 @@
             padding: 8px 16px;
             font-weight: 500;
             color: rgba(255, 255, 255, 0.6);
-            transition: color 0.3s ease;
+            border-radius: 9999px;
+            transition: color 0.3s ease, background 0.3s ease;
             cursor: pointer;
         }
         .light-theme .nav-link-ios { color: rgba(0, 0, 0, 0.6); }
-        .nav-link-ios:hover { color: var(--ro-text-primary); }
+        .nav-link-ios:hover { color: var(--ro-text-primary); background: rgba(255, 255, 255, 0.06); }
+        .light-theme .nav-link-ios:hover { background: rgba(0, 0, 0, 0.04); }
         .nav-link-ios::after {
             content: '';
             position: absolute;
@@ -374,22 +414,25 @@
         }
         .nav-link-ios:hover::after,
         .nav-link-ios.active::after { width: 100%; }
-        .nav-link-ios.active { color: var(--ro-text-primary); }
+        .nav-link-ios.active { color: var(--ro-text-primary); background: rgba(245, 158, 11, 0.10); }
 
         .search-ios {
             display: flex;
             align-items: center;
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(10px) saturate(160%);
+            -webkit-backdrop-filter: blur(10px) saturate(160%);
+            border-radius: 9999px;
             padding: 8px 16px;
             transition: all 0.3s ease;
-            border: 1px solid transparent;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
         }
-        .light-theme .search-ios { background: rgba(0, 0, 0, 0.04); }
+        .light-theme .search-ios { background: rgba(0, 0, 0, 0.04); border-color: rgba(0,0,0,0.05); }
         .search-ios:focus-within {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(245, 158, 11, 0.3);
-            box-shadow: 0 0 30px rgba(245, 158, 11, 0.05);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(245, 158, 11, 0.35);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 30px rgba(245, 158, 11, 0.08);
         }
         .search-ios input {
             background: transparent;
@@ -406,11 +449,11 @@
         .movie-card-premium {
             background: rgba(18, 20, 29, 0.7);
             backdrop-filter: blur(6px);
-            border-radius: 16px;
+            border-radius: 18px;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.06);
             cursor: pointer;
             position: relative;
         }
@@ -420,8 +463,8 @@
         }
         .movie-card-premium:hover {
             transform: translateY(-6px);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
-            border-color: rgba(245, 158, 11, 0.2);
+            box-shadow: 0 16px 34px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            border-color: rgba(245, 158, 11, 0.3);
         }
         .movie-card-premium .card-poster {
             position: relative;
@@ -438,9 +481,9 @@
         .movie-card-premium .card-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.08), transparent 35%), rgba(9, 10, 15, 0.62);
+            backdrop-filter: blur(14px) saturate(160%);
+            -webkit-backdrop-filter: blur(14px) saturate(160%);
             opacity: 0;
             display: flex;
             flex-direction: column;
@@ -479,8 +522,11 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(8px) saturate(180%);
+            -webkit-backdrop-filter: blur(8px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
             color: white;
             display: flex;
             align-items: center;
@@ -2222,14 +2268,43 @@
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
 
+        
+        .source-switch {
+            display: flex; align-items: center; gap: 8px;
+            flex-wrap: wrap; margin-bottom: 10px;
+        }
+        .source-switch .src-label {
+            font-size: 0.72rem; color: #9ca3af; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .04em;
+        }
+        .source-pill {
+            border: 1px solid rgba(255,255,255,.1);
+            background: rgba(255,255,255,.04);
+            color: #d1d5db; border-radius: 999px;
+            padding: 5px 12px; font-size: 0.75rem; font-weight: 700;
+            cursor: pointer;
+        }
+        .source-pill.active {
+            background: linear-gradient(135deg,#f59e0b,#fbbf24);
+            color: #111; border-color: transparent;
+        }
+        .source-pill.sub.active {
+            background: linear-gradient(135deg,#8b5cf6,#ec4899);
+            color: #fff;
+        }
+        .source-note { font-size: 0.7rem; color: #6b7280; }
+
         .country-pill {
             padding: 6px 14px;
             border-radius: 999px;
             font-size: 0.7rem;
             font-weight: 600;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(8px) saturate(160%);
+            -webkit-backdrop-filter: blur(8px) saturate(160%);
             color: #9ca3af;
-            border: 1px solid transparent;
+            border: 1px solid rgba(255,255,255,0.06);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
@@ -2550,7 +2625,12 @@
 
         @media (min-width: 641px) { .search-ios-mobile { display: none !important; } }
         @media (min-width: 1024px) { .hero-epic .hero-content .hero-title { font-size: 4.5rem; } }
-    </style>
+    
+        #movie-list-section, #movie-grid-container { scroll-margin-top: 110px; }
+        #movie-list-section.ro-filter-focus { animation: roFilterFocus .55s ease-out; }
+        @keyframes roFilterFocus { from { opacity: .78; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+        @media (prefers-reduced-motion: reduce) { #movie-list-section.ro-filter-focus { animation: none; } }
+</style>
 
 </head>
 <body class="selection:bg-amber-500 selection:text-black">
@@ -2595,6 +2675,7 @@
             </div>
             <div class="text-center text-xs text-gray-500 font-medium">
                 <p>© 2026 <strong class="text-amber-500">RoFlix Enterprise</strong>. Phim Online Chất Lượng Cao.</p>
+                <p class="mt-1">Nguồn dữ liệu: VSMOV (chính) · KKPhim (phụ). Bản quyền thuộc về VSMOV và KKPhim.</p>
             </div>
         </section>
 
@@ -2873,6 +2954,12 @@
 
             <!-- ===== BỘ LỌC THEO QUỐC GIA ===== -->
             <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-4">
+                <div class="source-switch" id="source-switch">
+                    <span class="src-label">Nguồn phim</span>
+                    <button type="button" class="source-pill active" data-source="vsmov" onclick="switchSource('vsmov')">VSMOV · chính</button>
+                    <button type="button" class="source-pill sub" data-source="kkphim" onclick="switchSource('kkphim')">KKPhim · phụ</button>
+                    <span class="source-note" id="source-note">Dữ liệu từ VSMOV</span>
+                </div>
                 <div class="country-filter" id="country-filter">
                     <button class="country-pill active" data-country="" onclick="filterByCountry('', 'Tất cả')">
                         <span class="flag">🌍</span> Tất cả
@@ -3098,8 +3185,10 @@
                 không vì mục đích thương mại.
             </p>
             <p style="font-size:0.65rem; color:#4b5563; line-height:1.6; margin-top:4px;">
-                ⚠️ Nội dung phim thuộc bản quyền của các đơn vị sở hữu. 
+                ⚠️ Nội dung phim thuộc bản quyền của các đơn vị sở hữu.
                 RoFlix chỉ tổng hợp link xem, không lưu trữ phim trên máy chủ.
+                Nguồn dữ liệu / API: <strong>VSMOV</strong> (chính) và <strong>KKPhim</strong> (phụ).
+                Bản quyền dữ liệu thuộc về <a href="https://vsmov.com" target="_blank" rel="noopener" class="text-amber-400">VSMOV</a> và <a href="https://kkphim.com" target="_blank" rel="noopener" class="text-amber-400">KKPhim</a>
                         </p>
                     </div>
                     <div class="footer-col">
@@ -3124,6 +3213,7 @@
                 </div>
                 <div class="footer-bottom">
                     <p>© 2026 <strong class="text-amber-500">RoFlix Enterprise</strong>. Made with <i class="fa-solid fa-heart text-red-500"></i> for movie lovers.</p>
+                    <p class="mt-1 text-[11px] text-gray-500">Bản quyền dữ liệu phim thuộc về VSMOV và KKPhim. RoFlix không sở hữu nội dung.</p>
                 </div>
             </footer>
         </div>
@@ -3494,9 +3584,65 @@
 
     <script>
         // ============================================================
-        // CẤU HÌNH API VSMOV
+        // CẤU HÌNH API — VSMOV (chính) + KKPhim (phụ)
+        // Tài liệu KKPhim: https://kkphim.com/api-document  (base: https://phimapi.com)
+        // Bản quyền dữ liệu: VSMOV và KKPhim
         // ============================================================
-        const API_BASE = 'https://vsmov.com/api';
+        const SOURCES = {
+            vsmov: {
+                id: 'vsmov',
+                name: 'VSMOV',
+                listBase: 'https://vsmov.com/api',
+                detailBase: 'https://vsmov.com/api',
+                cdn: ''
+            },
+            kkphim: {
+                id: 'kkphim',
+                name: 'KKPhim',
+                listBase: 'https://phimapi.com/v1/api',
+                detailBase: 'https://phimapi.com',
+                cdn: 'https://phimimg.com'
+            }
+        };
+        let currentSourceId = (localStorage.getItem('roflix-source') === 'kkphim') ? 'kkphim' : 'vsmov';
+
+        function getSource(id) {
+            return SOURCES[id] || SOURCES[currentSourceId] || SOURCES.vsmov;
+        }
+        function srcListUrl(path, sid) {
+            if (!path.startsWith('/')) path = '/' + path;
+            return getSource(sid || currentSourceId).listBase + path;
+        }
+        function srcDetailUrl(slug, sid) {
+            return getSource(sid || currentSourceId).detailBase + '/phim/' + encodeURIComponent(slug);
+        }
+        const API_BASE = srcListUrl(''); // backward-compat getter-like string (updated in switchSource)
+
+        function updateSourceUi() {
+            document.querySelectorAll('#source-switch .source-pill').forEach(el => {
+                el.classList.toggle('active', el.dataset.source === currentSourceId);
+            });
+            const note = document.getElementById('source-note');
+            if (note) {
+                note.textContent = currentSourceId === 'kkphim'
+                    ? 'Dữ liệu từ KKPhim (nguồn phụ)'
+                    : 'Dữ liệu từ VSMOV (nguồn chính)';
+            }
+        }
+
+        function switchSource(id) {
+            if (!SOURCES[id]) return;
+            currentSourceId = id;
+            try { localStorage.setItem('roflix-source', id); } catch (_) {}
+            updateSourceUi();
+            if (typeof showToastPro === 'function') {
+                showToastPro('info', 'Nguồn phim', id === 'kkphim' ? 'Đã chuyển sang KKPhim (phụ)' : 'Đã chuyển sang VSMOV (chính)');
+            }
+            if (typeof renderMoviesFromAPI === 'function') renderMoviesFromAPI(1);
+            if (typeof initHeroSlider === 'function') initHeroSlider();
+            if (typeof refreshRecommendations === 'function') refreshRecommendations(true);
+            if (typeof loadWeeklyPicks === 'function') loadWeeklyPicks();
+        }
 
         const ITEMS_PER_PAGE = 24;
         let currentPage = 1;
@@ -3519,12 +3665,100 @@
             return typeof url === 'string' && /^https?:\/\//i.test(url.trim());
         }
 
-        function pickPoster(item) {
+        function absImage(url, sid) {
+            if (!url || typeof url !== 'string') return '';
+            url = url.trim();
+            if (!url) return '';
+            if (/^https?:\/\//i.test(url)) return url;
+            const cdn = getSource(sid || currentSourceId).cdn;
+            if (!cdn) return '';
+            return cdn.replace(/\/$/, '') + '/' + url.replace(/^\//, '');
+        }
+
+        function pickPoster(item, sid) {
             const candidates = [item.poster_url, item.thumb_url, item.poster, item.thumb];
             for (const c of candidates) {
-                if (isValidPosterUrl(c)) return c.trim();
+                const abs = absImage(c, sid || item._src);
+                if (isValidPosterUrl(abs)) return abs;
             }
             return '';
+        }
+
+        function unwrapList(data) {
+            const items = data.items || (data.data && data.data.items) || data.data || data.movies || [];
+            const pag = data.pagination
+                || (data.data && data.data.params && data.data.params.pagination)
+                || (data.params && data.params.pagination)
+                || {};
+            return { items: Array.isArray(items) ? items : [], pag };
+        }
+
+        // Cache nhẹ trong bộ nhớ để tránh gọi lại API khi quay lại trang/thể loại vừa xem
+        const _apiCache = new Map();
+        const API_CACHE_TTL = 120000; // 2 phút
+        const API_CACHE_MAX = 60; // tránh phình bộ nhớ khi lướt nhiều trang
+        async function fetchJson(url) {
+            const hit = _apiCache.get(url);
+            if (hit && (Date.now() - hit.time) < API_CACHE_TTL) {
+                return hit.data;
+            }
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+            if (_apiCache.size >= API_CACHE_MAX) {
+                const oldestKey = _apiCache.keys().next().value;
+                _apiCache.delete(oldestKey);
+            }
+            _apiCache.set(url, { data, time: Date.now() });
+            return data;
+        }
+
+        function buildListPath(page) {
+            if (searchKeyword) {
+                return `/tim-kiem?keyword=${encodeURIComponent(searchKeyword)}&page=${page}`;
+            }
+            if (currentGenreSlug) return `/the-loai/${currentGenreSlug}?page=${page}`;
+            if (currentCountrySlug) return `/quoc-gia/${currentCountrySlug}?page=${page}`;
+            return `/danh-sach/${currentListEndpoint}?page=${page}`;
+        }
+
+        async function fetchMoviesFromSource(sid, page) {
+            const data = await fetchJson(srcListUrl(buildListPath(page), sid));
+            const { items, pag } = unwrapList(data);
+            const movies = items
+                .map(m => { m._src = sid; return m; })
+                .filter(m => !!pickPoster(m, sid));
+            totalPages = pag.totalPages || data.last_page || data.total_pages || 1;
+            totalItems = pag.totalItems || data.total || movies.length;
+            currentPage = pag.currentPage || page;
+            return movies;
+        }
+
+        // Gọi 1 endpoint danh sách với tự động dự phòng: nếu nguồn đang chọn lỗi,
+        // tự chuyển sang nguồn còn lại (VSMOV <-> KKPhim) để trang không bị "trắng" khi 1 nguồn sập.
+        // path: đường dẫn KHÔNG kèm domain, ví dụ '/quoc-gia/au-my?page=1'
+        async function fetchListWithFallback(path) {
+            const primary = currentSourceId;
+            const secondary = primary === 'kkphim' ? 'vsmov' : 'kkphim';
+            try {
+                const data = await fetchJson(srcListUrl(path, primary));
+                return { data, sid: primary };
+            } catch (e1) {
+                try {
+                    const data = await fetchJson(srcListUrl(path, secondary));
+                    return { data, sid: secondary };
+                } catch (e2) {
+                    throw e2;
+                }
+            }
+        }
+
+        // Map nhanh danh sách item trả về từ fetchListWithFallback, gán đúng _src cho từng phim
+        // (để lấy đúng CDN ảnh của nguồn đã thực sự trả dữ liệu, tránh lệch nguồn).
+        function mapListResultItems(result, limit) {
+            const items = unwrapList(result.data).items;
+            const sliced = typeof limit === 'number' ? items.slice(0, limit) : items;
+            return sliced.map(m => { m._src = result.sid; return mapMovieData(m); });
         }
 
         async function fetchMovies(page = 1) {
@@ -3533,35 +3767,26 @@
                     && currentListEndpoint === 'phim-moi-cap-nhat') {
                     return await fetchHomePriorityMovies(page);
                 }
-
-                let url;
-                if (searchKeyword) {
-                    url = `${API_BASE}/tim-kiem?keyword=${encodeURIComponent(searchKeyword)}&page=${page}`;
-                } else if (currentGenreSlug) {
-                    url = `${API_BASE}/the-loai/${currentGenreSlug}?page=${page}`;
-                } else if (currentCountrySlug) {
-                    url = `${API_BASE}/quoc-gia/${currentCountrySlug}?page=${page}`;
-                } else {
-                    url = `${API_BASE}/danh-sach/${currentListEndpoint}?page=${page}`;
+                const primary = currentSourceId;
+                const secondary = primary === 'kkphim' ? 'vsmov' : 'kkphim';
+                try {
+                    const primaryMovies = await fetchMoviesFromSource(primary, page);
+                    // Với thể loại/quốc gia/danh mục, một số nguồn trả HTTP 200 nhưng danh sách rỗng
+                    // do taxonomy khác nhau. Thử nguồn còn lại trước khi hiển thị trạng thái rỗng.
+                    if (primaryMovies.length || (!currentGenreSlug && !currentCountrySlug)) return primaryMovies;
+                    console.warn(primary + ' trả danh sách rỗng, thử nguồn ' + secondary);
+                    const backupMovies = await fetchMoviesFromSource(secondary, page);
+                    return backupMovies.length ? backupMovies : primaryMovies;
+                } catch (e1) {
+                    console.warn(primary + ' fail, fallback ' + secondary, e1);
+                    const movies = await fetchMoviesFromSource(secondary, page);
+                    if (typeof showToastPro === 'function') {
+                        showToastPro('warning', 'Nguồn phụ', getSource(primary).name + ' lỗi — đang dùng ' + getSource(secondary).name);
+                    } else {
+                        showToast('error', 'Nguồn phụ', 'Đã chuyển sang ' + getSource(secondary).name);
+                    }
+                    return movies;
                 }
-                
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const data = await response.json();
-                
-                let movies = data.items || data.data || data.movies || [];
-                movies = movies.filter(m => !!pickPoster(m));
-                
-                if (data.pagination) {
-                    totalPages = data.pagination.totalPages || 1;
-                    totalItems = data.pagination.totalItems || movies.length;
-                    currentPage = data.pagination.currentPage || page;
-                } else {
-                    totalPages = data.last_page || data.total_pages || 1;
-                    totalItems = data.total || movies.length;
-                }
-                
-                return movies;
             } catch (error) {
                 console.error('Lỗi tải phim:', error);
                 showToast('error', 'Lỗi kết nối', 'Không thể tải danh sách phim. Vui lòng thử lại!');
@@ -3570,17 +3795,31 @@
         }
 
         async function fetchHomePriorityMovies(page = 1) {
+            const sid = currentSourceId;
             const [auRes, krRes] = await Promise.all([
-                fetch(`${API_BASE}/quoc-gia/au-my?page=${page}`),
-                fetch(`${API_BASE}/quoc-gia/han-quoc?page=${page}`)
+                fetch(srcListUrl(`/quoc-gia/au-my?page=${page}`, sid)),
+                fetch(srcListUrl(`/quoc-gia/han-quoc?page=${page}`, sid))
             ]);
-            if (!auRes.ok && !krRes.ok) throw new Error('home priority fetch failed');
+            if (!auRes.ok && !krRes.ok) {
+                const other = sid === 'kkphim' ? 'vsmov' : 'kkphim';
+                const [au2, kr2] = await Promise.all([
+                    fetch(srcListUrl(`/quoc-gia/au-my?page=${page}`, other)),
+                    fetch(srcListUrl(`/quoc-gia/han-quoc?page=${page}`, other))
+                ]);
+                if (!au2.ok && !kr2.ok) throw new Error('home priority fetch failed');
+                return mergeHomePriority(au2, kr2, page, other);
+            }
+            return mergeHomePriority(auRes, krRes, page, sid);
+        }
 
+        async function mergeHomePriority(auRes, krRes, page, sid) {
             const auData = auRes.ok ? await auRes.json() : { items: [], pagination: {} };
             const krData = krRes.ok ? await krRes.json() : { items: [], pagination: {} };
+            const auWrap = unwrapList(auData);
+            const krWrap = unwrapList(krData);
 
-            const au = (auData.items || []).filter(m => pickPoster(m));
-            const kr = (krData.items || []).filter(m => pickPoster(m));
+            const au = auWrap.items.map(m => { m._src = sid; return m; }).filter(m => pickPoster(m, sid));
+            const kr = krWrap.items.map(m => { m._src = sid; return m; }).filter(m => pickPoster(m, sid));
 
             const merged = [];
             let i = 0, j = 0;
@@ -3590,30 +3829,37 @@
                 if (j < kr.length) merged.push(kr[j++]);
             }
 
-            const auPages = (auData.pagination && auData.pagination.totalPages) || 1;
-            const krPages = (krData.pagination && krData.pagination.totalPages) || 1;
+            const auPages = (auWrap.pag && auWrap.pag.totalPages) || 1;
+            const krPages = (krWrap.pag && krWrap.pag.totalPages) || 1;
             totalPages = Math.max(auPages, krPages);
-            totalItems = ((auData.pagination && auData.pagination.totalItems) || 0)
-                + ((krData.pagination && krData.pagination.totalItems) || 0);
+            totalItems = ((auWrap.pag && auWrap.pag.totalItems) || 0)
+                + ((krWrap.pag && krWrap.pag.totalItems) || 0);
             currentPage = page;
             return merged;
         }
 
-        async function fetchMovieDetail(slug) {
-            try {
-                const response = await fetch(`${API_BASE}/phim/${slug}`);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const data = await response.json();
-                const movie = data.movie || data.data || data;
-                if (data.episodes && !movie.episodes) {
-                    movie.episodes = data.episodes;
+        async function fetchMovieDetail(slug, preferredSrc) {
+            const order = [];
+            const first = preferredSrc || currentSourceId;
+            order.push(first);
+            const other = first === 'kkphim' ? 'vsmov' : 'kkphim';
+            if (!order.includes(other)) order.push(other);
+            let lastErr = null;
+            for (const sid of order) {
+                try {
+                    const data = await fetchJson(srcDetailUrl(slug, sid));
+                    const movie = data.movie || data.data || data;
+                    if (!movie || (!movie.slug && !movie.name)) continue;
+                    if (data.episodes && !movie.episodes) movie.episodes = data.episodes;
+                    movie._src = sid;
+                    return movie;
+                } catch (e) {
+                    lastErr = e;
                 }
-                return movie;
-            } catch (error) {
-                console.error('Lỗi tải chi tiết phim:', error);
-                showToast('error', 'Lỗi', 'Không thể tải thông tin phim!');
-                return null;
             }
+            console.error('Lỗi tải chi tiết phim:', lastErr);
+            showToast('error', 'Lỗi', 'Không thể tải thông tin phim!');
+            return null;
         }
 
         // ============================================================
@@ -3654,8 +3900,9 @@
                 tmdbType: tmdbType,
                 views: item.view || '0',
                 status: status,
-                poster: pickPoster(item) || 'https://placehold.co/300x400/1a1a1a/666?text=No+Image',
-                thumb: (isValidPosterUrl(item.thumb_url) ? item.thumb_url : '') || pickPoster(item),
+                _src: item._src || currentSourceId,
+                poster: pickPoster(item, item._src) || 'https://placehold.co/300x400/1a1a1a/666?text=No+Image',
+                thumb: absImage(item.thumb_url, item._src) || pickPoster(item, item._src),
                 summary: item.content || 'Chưa có tóm tắt',
                 episodes: item.episodes || [],
                 quality: item.quality || 'HD',
@@ -4182,11 +4429,13 @@
         function scrollToMovieList() {
             const el = document.getElementById('movie-list-section') || document.getElementById('movie-grid-container');
             if (!el) return;
-            // Đợi layout list render xong một nhịp
+            el.classList.remove('ro-filter-focus');
             requestAnimationFrame(() => {
                 setTimeout(() => {
-                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 80);
+                    el.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+                    el.classList.add('ro-filter-focus');
+                    setTimeout(() => el.classList.remove('ro-filter-focus'), 650);
+                }, 60);
             });
         }
 
@@ -4260,7 +4509,7 @@
             'subteam': 'subteam'
         };
 
-        function filterByList(endpointKey, title) {
+        async function filterByList(endpointKey, title) {
             searchKeyword = '';
             currentGenreSlug = '';
             currentCountrySlug = '';
@@ -4272,24 +4521,50 @@
             const sm = document.getElementById('search-input-mobile');
             if (si) si.value = '';
             if (sm) sm.value = '';
-            renderMoviesFromAPI(1);
             navigateTo('main-site');
+            await renderMoviesFromAPI(1);
+            scrollToMovieList();
         }
 
-        function filterByGenre(slug, title) {
+        // Chuẩn hóa thể loại theo slug mà API VSMOV/KKPhim sử dụng.
+        // Tránh gửi các slug tự đặt/không tồn tại khiến API trả danh sách rỗng.
+        const GENRE_ALIASES = {
+            'chinh-kich':'chinh-kich', 'drama':'chinh-kich', 'tam-ly':'tam-ly', 'psychological':'tam-ly',
+            'hai':'hai-huoc', 'hai-huoc':'hai-huoc', 'hai-hước':'hai-huoc', 'comedy':'hai-huoc',
+            'bi-an':'bi-an', 'mystery':'bi-an', 'gia-dinh':'gia-dinh', 'family':'gia-dinh',
+            'hanh-dong':'hanh-dong', 'action':'hanh-dong', 'vien-tuong':'vien-tuong', 'sci-fi':'vien-tuong',
+            'khoa-hoc-vien-tuong':'khoa-hoc-vien-tuong', 'khoa-hoc':'khoa-hoc-vien-tuong',
+            'hinh-su':'hinh-su', 'crime':'hinh-su', 'kinh-di':'kinh-di', 'horror':'kinh-di',
+            'phieu-luu':'phieu-luu', 'adventure':'phieu-luu', 'co-trang':'co-trang', 'period':'co-trang',
+            'vo-thuat':'vo-thuat', 'martial-arts':'vo-thuat', 'lang-man':'tinh-cam', 'tinh-cam':'tinh-cam', 'romance':'tinh-cam',
+            'gia-tuong':'than-thoai', 'than-thoai':'than-thoai', 'fantasy':'than-thoai',
+            'chien-tranh':'chien-tranh', 'war':'chien-tranh', 'hoc-duong':'hoc-duong', 'school':'hoc-duong',
+            'hoat-hinh':'hoat-hinh', 'animation':'hoat-hinh', 'tai-lieu':'tai-lieu', 'documentary':'tai-lieu',
+            'am-nhac':'am-nhac', 'music':'am-nhac', 'the-thao':'the-thao', 'sports':'the-thao',
+            'kinh-dien':'kinh-dien', 'classic':'kinh-dien', 'lich-su':'lich-su', 'history':'lich-su',
+            'mien-tay':'mien-tay', 'western':'mien-tay'
+        };
+        function resolveGenreSlug(value, title) {
+            const raw = String(value || '').trim().toLowerCase();
+            const normalized = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g,'d').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+            return GENRE_ALIASES[raw] || GENRE_ALIASES[normalized] || normalized;
+        }
+
+        async function filterByGenre(slug, title) {
             searchKeyword = '';
-            currentGenreSlug = slug;
+            currentGenreSlug = resolveGenreSlug(slug, title);
             currentCountrySlug = '';
             homePriorityMode = false;
             currentListEndpoint = 'phim-moi-cap-nhat';
             const titleEl = document.getElementById('list-title');
-            if (titleEl) titleEl.textContent = 'Thể Loại: ' + (title || slug);
+            if (titleEl) titleEl.textContent = 'Thể loại: ' + (title || slug);
             const si = document.getElementById('search-input');
             const sm = document.getElementById('search-input-mobile');
             if (si) si.value = '';
             if (sm) sm.value = '';
-            renderMoviesFromAPI(1);
             navigateTo('main-site');
+            await renderMoviesFromAPI(1);
+            scrollToMovieList();
         }
 
         function filterBy(key, value) {
@@ -4297,19 +4572,34 @@
                 if (value === 'Phim Lẻ') return filterByList('phim-le', 'Phim Lẻ');
                 if (value === 'Phim Bộ') return filterByList('phim-bo', 'Phim Bộ');
             }
-            if (key === 'list') {
-                return filterByList(value, arguments[2] || value);
+            if (key === 'list') return filterByList(value, arguments[2] || value);
+            if (key === 'genre') {
+                const normalized = String(value || '').trim().toLowerCase();
+                if (['chiếu rạp','chieu rap','phim 18+','18+'].includes(normalized)) {
+                    return filterByList('phim-le', value === 'Chiếu Rạp' ? 'Chiếu Rạp · Phim lẻ' : value);
+                }
+                return filterByGenre(value, value);
             }
-            searchKeyword = String(value);
+            if (key === 'rating') {
+                searchKeyword = '';
+                currentGenreSlug = '';
+                currentCountrySlug = '';
+                homePriorityMode = false;
+                currentListEndpoint = 'phim-moi-cap-nhat';
+                const titleEl = document.getElementById('list-title');
+                if (titleEl) titleEl.textContent = 'BXH / Đánh giá cao';
+                renderMoviesFromAPI(1).then(scrollToMovieList);
+                navigateTo('main-site');
+                return;
+            }
+            searchKeyword = String(value || '');
             currentGenreSlug = '';
             currentCountrySlug = '';
             homePriorityMode = false;
             currentListEndpoint = 'phim-moi-cap-nhat';
             const titleEl = document.getElementById('list-title');
-            if (titleEl) {
-                titleEl.textContent = key === 'genre' ? ('Thể Loại: ' + value) : (key === 'rating' ? 'BXH / Đánh giá cao' : String(value));
-            }
-            renderMoviesFromAPI(1);
+            if (titleEl) titleEl.textContent = String(value || 'Kết quả');
+            renderMoviesFromAPI(1).then(scrollToMovieList);
             navigateTo('main-site');
         }
 
@@ -5547,22 +5837,17 @@ function escapeHtml(text) {
 
         async function initHeroSlider() {
             try {
-                const res = await fetch(`${API_BASE}/quoc-gia/au-my?page=1`);
-                if (!res.ok) throw new Error('hero fetch failed');
-                const data = await res.json();
-                const items = data.items || data.data || [];
-                heroSlides = items
-                    .map(mapMovieData)
+                const res1 = await fetchListWithFallback('/quoc-gia/au-my?page=1');
+                heroSlides = mapListResultItems(res1)
                     .filter(m => m.slug && isValidPosterUrl(m.poster))
                     .slice(0, 8);
 
                 if (heroSlides.length < 4) {
-                    const extra = await fetch(`${API_BASE}/tim-kiem?keyword=2024&page=1`);
-                    if (extra.ok) {
-                        const ed = await extra.json();
-                        const more = (ed.items || []).map(mapMovieData).filter(m => m.slug);
+                    try {
+                        const res2 = await fetchListWithFallback('/tim-kiem?keyword=2024&page=1');
+                        const more = mapListResultItems(res2).filter(m => m.slug);
                         heroSlides = [...heroSlides, ...more].slice(0, 8);
-                    }
+                    } catch (_) {}
                 }
 
                 if (!heroSlides.length) return;
@@ -5728,9 +6013,8 @@ function escapeHtml(text) {
             const el = document.getElementById('bb-hot-list');
             if (!el) return;
             try {
-                const res = await fetch(`${API_BASE}/quoc-gia/au-my?page=1`);
-                const data = await res.json();
-                const items = (data.items || []).slice(0, 5).map(mapMovieData);
+                const res = await fetchListWithFallback('/quoc-gia/au-my?page=1');
+                const items = mapListResultItems(res, 5);
                 if (!items.length) {
                     el.innerHTML = '<li class="text-xs text-gray-500 px-2">Chưa có dữ liệu</li>';
                     return;
@@ -5748,9 +6032,8 @@ function escapeHtml(text) {
                 const favIds = getFavorites();
                 let items = [];
                 if (favIds.length) {
-                    const res = await fetch(`${API_BASE}/quoc-gia/au-my?page=1`);
-                    const data = await res.json();
-                    const all = (data.items || []).map(mapMovieData);
+                    const res = await fetchListWithFallback('/quoc-gia/au-my?page=1');
+                    const all = mapListResultItems(res);
                     items = all.filter(m => favIds.includes(m.slug)).slice(0, 5);
                     for (const slug of favIds) {
                         if (items.length >= 5) break;
@@ -5762,9 +6045,8 @@ function escapeHtml(text) {
                     }
                 }
                 if (items.length < 5) {
-                    const res2 = await fetch(`${API_BASE}/danh-sach/phim-bo?page=1`);
-                    const data2 = await res2.json();
-                    const more = (data2.items || []).map(mapMovieData);
+                    const res2 = await fetchListWithFallback('/danh-sach/phim-bo?page=1');
+                    const more = mapListResultItems(res2);
                     for (const m of more) {
                         if (items.length >= 5) break;
                         if (!items.find(x => x.slug === m.slug)) items.push(m);
@@ -5850,7 +6132,7 @@ function escapeHtml(text) {
         // ===== 1. FILTER THEO QUỐC GIA =====
         let currentCountry = '';
 
-        function filterByCountry(slug, title) {
+        async function filterByCountry(slug, title) {
             currentCountry = slug || '';
             
             document.querySelectorAll('.country-pill').forEach(el => {
@@ -5883,8 +6165,9 @@ function escapeHtml(text) {
             if (si) si.value = '';
             if (sm) sm.value = '';
             
-            renderMoviesFromAPI(1);
             navigateTo('main-site');
+            await renderMoviesFromAPI(1);
+            scrollToMovieList();
         }
 
         // ===== 2. XEM TIẾP (CONTINUE WATCHING) =====
@@ -6055,10 +6338,8 @@ function escapeHtml(text) {
 
         async function checkNewMovies() {
             try {
-                const res = await fetch(`${API_BASE}/danh-sach/phim-moi-cap-nhat?page=1`);
-                if (!res.ok) return;
-                const data = await res.json();
-                const movies = data.items || data.data || [];
+                const res = await fetchListWithFallback('/danh-sach/phim-moi-cap-nhat?page=1');
+                const movies = unwrapList(res.data).items;
                 const slugs = movies.map(m => m.slug || m._id || '').filter(Boolean);
 
                 // Lần đầu: chỉ seed, không bắn thông báo spam
@@ -6165,21 +6446,18 @@ function escapeHtml(text) {
         }
 
         async function fetchRecoPool() {
-            const endpoints = [
-                `${API_BASE}/quoc-gia/au-my?page=1`,
-                `${API_BASE}/quoc-gia/han-quoc?page=1`,
-                `${API_BASE}/danh-sach/phim-moi-cap-nhat?page=1`,
-                `${API_BASE}/danh-sach/phim-bo?page=1`
+            const paths = [
+                '/quoc-gia/au-my?page=1',
+                '/quoc-gia/han-quoc?page=1',
+                '/danh-sach/phim-moi-cap-nhat?page=1',
+                '/danh-sach/phim-bo?page=1'
             ];
-            const results = await Promise.allSettled(
-                endpoints.map(u => fetch(u).then(r => r.ok ? r.json() : { items: [] }))
-            );
+            const results = await Promise.allSettled(paths.map(p => fetchListWithFallback(p)));
             const map = new Map();
             results.forEach(res => {
                 if (res.status !== 'fulfilled') return;
-                const items = res.value.items || res.value.data || [];
-                items.forEach(raw => {
-                    const m = mapMovieData(raw);
+                const items = mapListResultItems(res.value);
+                items.forEach(m => {
                     if (!m.slug || !isValidPosterUrl(m.poster)) return;
                     if (!map.has(m.slug)) map.set(m.slug, m);
                 });
@@ -6300,13 +6578,14 @@ function escapeHtml(text) {
                     movies = results.filter(m => m && m.slug && isValidPosterUrl(m.poster));
                 }
                 if (!movies.length) {
-                    const [au, kr] = await Promise.all([
-                        fetch(`${API_BASE}/quoc-gia/au-my?page=1`).then(r => r.ok ? r.json() : { items: [] }),
-                        fetch(`${API_BASE}/quoc-gia/han-quoc?page=1`).then(r => r.ok ? r.json() : { items: [] })
+                    const [auRes, krRes] = await Promise.allSettled([
+                        fetchListWithFallback('/quoc-gia/au-my?page=1'),
+                        fetchListWithFallback('/quoc-gia/han-quoc?page=1')
                     ]);
-                    const pool = [...(au.items || []), ...(kr.items || [])]
-                        .map(mapMovieData)
-                        .filter(m => m.slug && isValidPosterUrl(m.poster));
+                    const pool = [
+                        ...(auRes.status === 'fulfilled' ? mapListResultItems(auRes.value) : []),
+                        ...(krRes.status === 'fulfilled' ? mapListResultItems(krRes.value) : [])
+                    ].filter(m => m.slug && isValidPosterUrl(m.poster));
                     // chọn 8 phim rating cao
                     movies = pool
                         .sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0))
@@ -6415,31 +6694,25 @@ function escapeHtml(text) {
 
         async function fetchRandomPool(opts = {}) {
             const page = opts.page || (1 + Math.floor(Math.random() * 5));
-            let url;
+            let path;
             if (opts.genre) {
-                url = `${API_BASE}/the-loai/${opts.genre}?page=${page}`;
+                path = `/the-loai/${opts.genre}?page=${page}`;
             } else if (opts.country) {
-                url = `${API_BASE}/quoc-gia/${opts.country}?page=${page}`;
+                path = `/quoc-gia/${opts.country}?page=${page}`;
             } else if (opts.type) {
-                url = `${API_BASE}/danh-sach/${opts.type}?page=${page}`;
+                path = `/danh-sach/${opts.type}?page=${page}`;
             } else {
-                // mix: đôi khi Âu Mỹ, Hàn, mới cập nhật
                 const modes = [
-                    `${API_BASE}/danh-sach/phim-moi-cap-nhat?page=${page}`,
-                    `${API_BASE}/quoc-gia/au-my?page=${page}`,
-                    `${API_BASE}/quoc-gia/han-quoc?page=${page}`,
-                    `${API_BASE}/danh-sach/phim-bo?page=${page}`,
-                    `${API_BASE}/danh-sach/phim-le?page=${page}`
+                    `/danh-sach/phim-moi-cap-nhat?page=${page}`,
+                    `/quoc-gia/au-my?page=${page}`,
+                    `/quoc-gia/han-quoc?page=${page}`,
+                    `/danh-sach/phim-bo?page=${page}`,
+                    `/danh-sach/phim-le?page=${page}`
                 ];
-                url = modes[Math.floor(Math.random() * modes.length)];
+                path = modes[Math.floor(Math.random() * modes.length)];
             }
-            const res = await fetch(url);
-            if (!res.ok) throw new Error('random fetch fail');
-            const data = await res.json();
-            const items = (data.items || data.data || [])
-                .map(mapMovieData)
-                .filter(m => m.slug && isValidPosterUrl(m.poster));
-            return items;
+            const res = await fetchListWithFallback(path);
+            return mapListResultItems(res).filter(m => m.slug && isValidPosterUrl(m.poster));
         }
 
         function shuffle(arr) {
@@ -6563,6 +6836,7 @@ function escapeHtml(text) {
             }
 
             bindRandomChips();
+            updateSourceUi();
 
             // Critical path: danh sách phim trước
             renderMoviesFromAPI(1);
