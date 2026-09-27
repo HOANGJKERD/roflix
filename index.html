@@ -2925,6 +2925,24 @@
                 </div>
             </section>
 
+            <main id="movie-list-section" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
+                <div class="flex items-center justify-between border-b border-gray-800 pb-4">
+                    <div class="flex items-center space-x-3">
+                        <span class="w-1.5 h-6 bg-gradient-to-b from-amber-500 to-purple-500 rounded-full"></span>
+                        <h2 id="list-title" class="text-xl md:text-2xl font-black uppercase tracking-wider text-white">Phim Âu Mỹ & Hàn nổi bật</h2>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        <span id="movie-count">Đang tải...</span>
+                    </div>
+                </div>
+
+                <div id="movie-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6"></div>
+                <div id="pagination-container" class="mt-8"></div>
+            </main>
+
+            <!-- Khu phụ: tuần này / đề xuất / random — dưới danh sách phim -->
+
+
             <!-- PHIM TUẦN NÀY -->
             <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full weekly-section" id="weekly-section">
                 <div class="weekly-head">
@@ -2935,6 +2953,7 @@
                     <div class="text-sm text-gray-500 py-2">Đang tải phim tuần này...</div>
                 </div>
             </section>
+
 
 
             <!-- RANDOM PHIM -->
@@ -3017,6 +3036,7 @@
                 </div>
             </section>
 
+
             <!-- AUTO RECOMMENDATIONS -->
             <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full reco-section" id="reco-section">
                 <div class="reco-head">
@@ -3028,21 +3048,6 @@
                 <div id="reco-tonight" class="reco-tonight" style="display:none"></div>
                 <div id="reco-row" class="reco-row reco-empty">Đang chọn phim phù hợp...</div>
             </section>
-
-            <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
-                <div class="flex items-center justify-between border-b border-gray-800 pb-4">
-                    <div class="flex items-center space-x-3">
-                        <span class="w-1.5 h-6 bg-gradient-to-b from-amber-500 to-purple-500 rounded-full"></span>
-                        <h2 id="list-title" class="text-xl md:text-2xl font-black uppercase tracking-wider text-white">Phim Âu Mỹ & Hàn nổi bật</h2>
-                    </div>
-                    <div class="text-xs text-gray-500">
-                        <span id="movie-count">Đang tải...</span>
-                    </div>
-                </div>
-
-                <div id="movie-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6"></div>
-                <div id="pagination-container" class="mt-8"></div>
-            </main>
 
             <!-- ===== BOTTOM BOARDS ===== -->
             <section class="bottom-boards" id="bottom-boards">
@@ -4156,6 +4161,7 @@
             currentCountrySlug = '';
             homePriorityMode = true;
             currentListEndpoint = 'phim-moi-cap-nhat';
+            showSecondarySections();
             document.getElementById('list-title').textContent = 'Phim Âu Mỹ & Hàn nổi bật';
             document.getElementById('search-input').value = '';
             document.getElementById('search-input-mobile').value = '';
@@ -4166,30 +4172,28 @@
         // ============================================================
         // SEARCH & FILTER
         // ============================================================
-        async function handleSearch() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                const input = document.getElementById('search-input');
-                const val = (input ? input.value : '').trim();
-                searchKeyword = val;
-                currentGenreSlug = '';
-                currentCountrySlug = '';
-                homePriorityMode = !val;
-                currentListEndpoint = 'phim-moi-cap-nhat';
-                const titleEl = document.getElementById('list-title');
-                if (titleEl) {
-                    titleEl.textContent = val ? `Kết quả: "${val}"` : 'Phim Âu Mỹ & Hàn nổi bật';
-                }
-                navigateTo('main-site');
-                renderMoviesFromAPI(1);
-            }, 400);
+
+        function showSecondarySections() {
+            document.querySelectorAll('#weekly-section, #random-panel-wrap, #reco-section').forEach(el => {
+                if (el) el.style.display = '';
+            });
         }
 
-        async function handleSearchMobile() {
+        function scrollToMovieList() {
+            const el = document.getElementById('movie-list-section') || document.getElementById('movie-grid-container');
+            if (!el) return;
+            // Đợi layout list render xong một nhịp
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 80);
+            });
+        }
+
+                async function handleSearch() {
             clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                const input = document.getElementById('search-input-mobile');
-                const val = (input ? input.value : '').trim();
+            searchTimeout = setTimeout(async () => {
+                const val = (document.getElementById('search-input')?.value || '').trim();
                 searchKeyword = val;
                 currentGenreSlug = '';
                 currentCountrySlug = '';
@@ -4197,12 +4201,39 @@
                 currentListEndpoint = 'phim-moi-cap-nhat';
                 const titleEl = document.getElementById('list-title');
                 if (titleEl) {
-                    titleEl.textContent = val ? `Kết quả: "${val}"` : 'Phim Mới Cập Nhật';
+                    titleEl.textContent = val ? `Kết quả tìm kiếm: "${val}"` : 'Phim Âu Mỹ & Hàn nổi bật';
                 }
-                closeMobileMenu();
+                // Ẩn nhẹ khu phụ khi đang tìm để kết quả nổi lên trước
+                document.querySelectorAll('#weekly-section, #random-panel-wrap, #reco-section').forEach(el => {
+                    if (el) el.style.display = val ? 'none' : '';
+                });
                 navigateTo('main-site');
-                renderMoviesFromAPI(1);
-            }, 400);
+                await renderMoviesFromAPI(1);
+                if (val) scrollToMovieList();
+            }, 350);
+        }
+
+                async function handleSearchMobile() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(async () => {
+                const val = (document.getElementById('search-input-mobile')?.value || '').trim();
+                searchKeyword = val;
+                currentGenreSlug = '';
+                currentCountrySlug = '';
+                homePriorityMode = !val;
+                currentListEndpoint = 'phim-moi-cap-nhat';
+                const titleEl = document.getElementById('list-title');
+                if (titleEl) {
+                    titleEl.textContent = val ? `Kết quả tìm kiếm: "${val}"` : 'Phim Âu Mỹ & Hàn nổi bật';
+                }
+                document.querySelectorAll('#weekly-section, #random-panel-wrap, #reco-section').forEach(el => {
+                    if (el) el.style.display = val ? 'none' : '';
+                });
+                navigateTo('main-site');
+                closeMobileMenu();
+                await renderMoviesFromAPI(1);
+                if (val) scrollToMovieList();
+            }, 350);
         }
 
         function clearSearch() {
