@@ -11,6 +11,13 @@
     <meta name="keywords" content="xem phim, phim online, phim hay, xem phim miễn phí, roflix, movies">
     <meta name="author" content="RoFlix Enterprise">
     <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#f59e0b">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="RoFlix">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=RF&background=f59e0b&color=111&size=180&bold=true">
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://roflix.local/">
@@ -18,6 +25,11 @@
     <meta property="og:description" content="Xem phim online chất lượng cao HD/4K miễn phí.">
     <meta property="og:image" content="https://image.tmdb.org/t/p/original/8cdWjvZQUxUj6l1O3lB1K4G5H7J.jpg">
 
+    <link rel="preconnect" href="https://vsmov.com" crossorigin>
+    <link rel="dns-prefetch" href="https://vsmov.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://ui-avatars.com" crossorigin>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -52,7 +64,8 @@
             }
         }
     </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
     
     <style>
         :root {
@@ -1963,6 +1976,252 @@
             gap: 8px;
             padding: 4px 0 12px;
         }
+
+        /* ===== AUTO RECOMMEND ===== */
+        .reco-section { margin: 8px 0 20px; }
+        .reco-head {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
+        }
+        .reco-head h2 {
+            margin: 0; font-size: 1.05rem; font-weight: 800;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .reco-head h2 span { color: #f59e0b; }
+        .reco-refresh {
+            border: 1px solid rgba(245,158,11,.35);
+            background: rgba(245,158,11,.1);
+            color: #fbbf24; border-radius: 999px;
+            padding: 6px 12px; font-size: 0.75rem; font-weight: 700;
+            cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .reco-refresh:hover { background: rgba(245,158,11,.2); }
+        .reco-tonight {
+            display: grid; grid-template-columns: 120px 1fr auto;
+            gap: 14px; align-items: center;
+            background: linear-gradient(135deg, rgba(245,158,11,.12), rgba(139,92,246,.12));
+            border: 1px solid rgba(245,158,11,.25);
+            border-radius: 16px; padding: 12px 14px; margin-bottom: 14px;
+            cursor: pointer; transition: .2s ease;
+        }
+        .reco-tonight:hover { border-color: rgba(245,158,11,.5); transform: translateY(-2px); }
+        .reco-tonight img {
+            width: 120px; height: 72px; object-fit: cover; border-radius: 10px; background: #111;
+        }
+        .reco-tonight .tag {
+            display: inline-block; font-size: 0.65rem; font-weight: 800;
+            color: #f59e0b; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 4px;
+        }
+        .reco-tonight .name { font-weight: 800; font-size: 0.95rem; margin: 0 0 2px; }
+        .reco-tonight .meta { font-size: 0.75rem; color: #9ca3af; margin: 0; }
+        .reco-tonight .go {
+            border: 0; border-radius: 12px; padding: 10px 14px;
+            background: linear-gradient(135deg,#f59e0b,#fbbf24); color: #111;
+            font-weight: 800; cursor: pointer; white-space: nowrap;
+        }
+        @media (max-width: 640px) {
+            .reco-tonight { grid-template-columns: 88px 1fr; }
+            .reco-tonight img { width: 88px; height: 56px; }
+            .reco-tonight .go { grid-column: 1 / -1; width: 100%; }
+        }
+        .reco-row {
+            display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px;
+            scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+        }
+        .reco-row::-webkit-scrollbar { height: 4px; }
+        .reco-card {
+            flex: 0 0 140px; scroll-snap-align: start; cursor: pointer;
+            background: rgba(18,20,29,.85); border: 1px solid rgba(255,255,255,.06);
+            border-radius: 14px; overflow: hidden; transition: .2s ease;
+        }
+        .reco-card:hover { transform: translateY(-4px); border-color: rgba(245,158,11,.35); }
+        .reco-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; background: #111; }
+        .reco-card .body { padding: 8px 10px 10px; }
+        .reco-card .body .t {
+            font-size: 0.75rem; font-weight: 700; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis; margin: 0 0 2px;
+        }
+        .reco-card .body .s { font-size: 0.65rem; color: #9ca3af; margin: 0; }
+        .reco-why {
+            display: inline-block; margin-top: 4px; font-size: 0.6rem; font-weight: 700;
+            color: #a78bfa; background: rgba(139,92,246,.12); padding: 2px 6px; border-radius: 6px;
+        }
+        .reco-empty { color: #6b7280; font-size: 0.85rem; padding: 8px 0; }
+
+
+        /* Perf: native content-visibility for below-fold blocks */
+        .topics-section, .reco-section, #bottom-boards, .bottom-boards {
+            content-visibility: auto;
+            contain-intrinsic-size: 1px 320px;
+        }
+        #movie-grid img, .reco-card img, .movie-card-premium img {
+            content-visibility: auto;
+        }
+
+        
+        .api-error-box {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px 20px;
+            border: 1px dashed rgba(245,158,11,.35);
+            border-radius: 16px;
+            background: rgba(245,158,11,.05);
+        }
+        .api-error-box h3 { margin: 0 0 8px; font-size: 1.1rem; color: #f3f4f6; }
+        .api-error-box p { margin: 0 0 16px; color: #9ca3af; font-size: 0.9rem; }
+        .api-error-box button {
+            border: 0; border-radius: 12px; padding: 10px 18px;
+            background: linear-gradient(135deg,#f59e0b,#fbbf24);
+            color: #111; font-weight: 800; cursor: pointer;
+        }
+        .weekly-section { margin: 10px 0 18px; }
+        .weekly-head {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 10px; margin-bottom: 12px; flex-wrap: wrap;
+        }
+        .weekly-head h2 { margin: 0; font-size: 1.05rem; font-weight: 800; }
+        .weekly-head h2 span { color: #f59e0b; }
+        .weekly-row {
+            display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px;
+            scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+        }
+        .weekly-card {
+            position: relative;
+            flex: 0 0 150px; scroll-snap-align: start; cursor: pointer;
+            border-radius: 14px; overflow: hidden;
+            border: 1px solid rgba(245,158,11,.25);
+            background: rgba(18,20,29,.9);
+            transition: .2s ease;
+        }
+        .weekly-card:hover { transform: translateY(-4px); border-color: rgba(245,158,11,.55); }
+        .weekly-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; background:#111; }
+        .weekly-card .body { padding: 8px 10px 10px; }
+        .weekly-card .body .t {
+            font-size: 0.75rem; font-weight: 700; margin: 0 0 2px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .weekly-card .body .s { font-size: 0.65rem; color: #9ca3af; margin: 0; }
+        .weekly-badge {
+            position: absolute; top: 8px; left: 8px;
+            background: linear-gradient(135deg,#f59e0b,#fbbf24);
+            color: #111; font-size: 0.6rem; font-weight: 800;
+            padding: 2px 8px; border-radius: 6px; z-index: 2;
+        }
+        .pwa-banner {
+            position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+            z-index: 200; max-width: 92vw; width: 380px;
+            background: #12141d; border: 1px solid rgba(245,158,11,.4);
+            border-radius: 16px; padding: 12px 14px;
+            box-shadow: 0 12px 40px rgba(0,0,0,.45);
+            display: none; align-items: center; gap: 12px;
+        }
+        .pwa-banner.show { display: flex; }
+        .pwa-banner p { margin: 0; font-size: 0.8rem; flex: 1; color: #e5e7eb; }
+        .pwa-banner button {
+            border: 0; border-radius: 10px; padding: 8px 12px;
+            font-weight: 700; cursor: pointer; font-size: 0.75rem;
+        }
+        .pwa-banner .yes { background: #f59e0b; color: #111; }
+        .pwa-banner .no { background: transparent; color: #9ca3af; border: 1px solid #333; }
+
+        
+        .random-panel {
+            margin: 12px 0 20px;
+            background: rgba(18,20,29,.92);
+            border: 1px solid rgba(255,255,255,.06);
+            border-radius: 20px;
+            padding: 18px 16px 16px;
+        }
+        .random-panel h2 {
+            margin: 0 0 4px;
+            font-size: 1.15rem;
+            font-weight: 800;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .random-panel .sub {
+            color: #9ca3af; font-size: 0.8rem; margin: 0 0 14px;
+        }
+        .random-block {
+            background: rgba(9,10,15,.55);
+            border: 1px solid rgba(255,255,255,.05);
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+        .random-block h3 {
+            margin: 0 0 4px; font-size: 0.95rem; font-weight: 700;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .random-block .hint { color: #6b7280; font-size: 0.75rem; margin: 0 0 12px; }
+        .random-quick-result {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 12px; padding: 8px 0 4px;
+        }
+        .random-quick-result img {
+            width: 160px; border-radius: 12px; aspect-ratio: 2/3; object-fit: cover;
+            box-shadow: 0 12px 30px rgba(0,0,0,.4); background: #111;
+            cursor: pointer;
+        }
+        .random-quick-result .title {
+            font-weight: 800; text-align: center; font-size: 0.95rem;
+        }
+        .random-quick-result .meta { color: #9ca3af; font-size: 0.75rem; text-align: center; }
+        .random-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        .btn-random {
+            border: 0; border-radius: 12px; padding: 10px 16px;
+            font-weight: 800; cursor: pointer; font-size: 0.85rem;
+        }
+        .btn-random.primary { background: #ef4444; color: #fff; }
+        .btn-random.primary:hover { background: #dc2626; }
+        .btn-random.ghost {
+            background: transparent; color: #e5e7eb;
+            border: 1px solid rgba(255,255,255,.12);
+        }
+        .random-filters { display: grid; gap: 12px; }
+        @media (min-width: 768px) {
+            .random-filters { grid-template-columns: 1fr 1fr; }
+        }
+        .random-label {
+            display: block; font-size: 0.72rem; color: #9ca3af;
+            margin-bottom: 6px; font-weight: 600;
+        }
+        .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+        .chip {
+            border: 1px solid rgba(255,255,255,.1);
+            background: rgba(255,255,255,.04);
+            color: #d1d5db; border-radius: 999px;
+            padding: 5px 10px; font-size: 0.72rem; cursor: pointer;
+            transition: .15s ease;
+        }
+        .chip:hover { border-color: rgba(245,158,11,.4); }
+        .chip.active {
+            background: rgba(239,68,68,.2);
+            border-color: #ef4444; color: #fecaca; font-weight: 700;
+        }
+        .random-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            gap: 10px; margin-top: 12px;
+        }
+        @media (min-width: 640px) {
+            .random-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+        }
+        @media (min-width: 1024px) {
+            .random-grid { grid-template-columns: repeat(5, minmax(0,1fr)); }
+        }
+        .random-grid .item {
+            border-radius: 12px; overflow: hidden; cursor: pointer;
+            border: 1px solid rgba(255,255,255,.06);
+            background: #12141d;
+        }
+        .random-grid .item img {
+            width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; background:#111;
+        }
+        .random-grid .item .cap {
+            padding: 6px 8px; font-size: 0.7rem; font-weight: 700;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
         .country-pill {
             padding: 6px 14px;
             border-radius: 999px;
@@ -2451,6 +2710,9 @@
                                 <i class="fa-solid fa-clock-rotate-left text-xs"></i>
                                 <span>Tiếp tục</span>
                             </a>
+                            <a href="#" onclick="openRandomPanel(); return false;" class="nav-link-ios text-rose-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-shuffle"></i><span class="hidden lg:inline">Random</span>
+                            </a>
                         </nav>
                     </div>
 
@@ -2564,6 +2826,7 @@
                     <div class="pt-2 border-t border-gray-800/80 space-y-2">
                         <a href="#" onclick="showFavorites(); closeMobileMenu(); return false;" class="block py-1.5 text-amber-400"><i class="fa-solid fa-bookmark mr-2"></i>Phim Yêu Thích</a>
                         <a href="#" onclick="showContinueWatching(); closeMobileMenu(); return false;" class="block py-1.5 text-purple-400"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Tiếp tục xem</a>
+                        <a href="#" onclick="openRandomPanel(); closeMobileMenu(); return false;" class="block py-1.5 text-rose-400"><i class="fa-solid fa-shuffle mr-2"></i>Random phim</a>
                     </div>
                     <div class="pt-2 border-t border-gray-800/80">
                         <a href="#" onclick="navigateToProfile(); closeMobileMenu(); return false;" class="block py-1.5 text-amber-400"><i class="fa-solid fa-user mr-2"></i>Hồ sơ</a>
@@ -2660,6 +2923,110 @@
                         <h3>Chiến Tranh</h3><span>Xem chủ đề ›</span>
                     </button>
                 </div>
+            </section>
+
+            <!-- PHIM TUẦN NÀY -->
+            <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full weekly-section" id="weekly-section">
+                <div class="weekly-head">
+                    <h2>📅 <span>Phim tuần này</span></h2>
+                    <span class="text-xs text-gray-500">Curated · chọn tay</span>
+                </div>
+                <div id="weekly-row" class="weekly-row">
+                    <div class="text-sm text-gray-500 py-2">Đang tải phim tuần này...</div>
+                </div>
+            </section>
+
+
+            <!-- RANDOM PHIM -->
+            <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full" id="random-panel-wrap">
+                <div class="random-panel" id="random-panel">
+                    <h2><i class="fa-solid fa-shuffle text-rose-400"></i> Random Phim</h2>
+                    <p class="sub">Khám phá ngẫu nhiên — quay 1 phim bất kỳ hoặc lọc theo loại, thể loại, số lượng.</p>
+
+                    <div class="random-block">
+                        <h3>⚡ Random nhanh</h3>
+                        <p class="hint">Quay 1 phim bất kỳ — bấm Quay phim khác hoặc phím <b>R</b>.</p>
+                        <div id="random-quick" class="random-quick-result">
+                            <p class="meta">Bấm nút để quay phim</p>
+                        </div>
+                        <div class="random-actions">
+                            <button type="button" class="btn-random primary" onclick="randomQuick()">
+                                <i class="fa-solid fa-rotate"></i> Quay phim khác
+                            </button>
+                            <button type="button" class="btn-random ghost" id="random-quick-watch" style="display:none" onclick="randomQuickWatch()">
+                                <i class="fa-solid fa-play"></i> Xem ngay
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="random-block">
+                        <h3>🎛 Random nâng cao</h3>
+                        <p class="hint">Chọn loại / quốc gia / thể loại, số lượng rồi bấm QUAY.</p>
+                        <div class="random-filters">
+                            <div>
+                                <span class="random-label">Loại phim</span>
+                                <div class="chip-row" id="rand-type">
+                                    <button type="button" class="chip active" data-v="">Tất cả</button>
+                                    <button type="button" class="chip" data-v="phim-le">Phim lẻ</button>
+                                    <button type="button" class="chip" data-v="phim-bo">Phim bộ</button>
+                                    <button type="button" class="chip" data-v="phim-moi-cap-nhat">Mới cập nhật</button>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="random-label">Quốc gia</span>
+                                <div class="chip-row" id="rand-country">
+                                    <button type="button" class="chip active" data-v="">Tất cả</button>
+                                    <button type="button" class="chip" data-v="au-my">Âu Mỹ</button>
+                                    <button type="button" class="chip" data-v="han-quoc">Hàn Quốc</button>
+                                    <button type="button" class="chip" data-v="nhat-ban">Nhật Bản</button>
+                                    <button type="button" class="chip" data-v="trung-quoc">Trung Quốc</button>
+                                    <button type="button" class="chip" data-v="thai-lan">Thái Lan</button>
+                                    <button type="button" class="chip" data-v="viet-nam">Việt Nam</button>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="random-label">Thể loại</span>
+                                <div class="chip-row" id="rand-genre">
+                                    <button type="button" class="chip active" data-v="">Tất cả</button>
+                                    <button type="button" class="chip" data-v="hanh-dong">Hành động</button>
+                                    <button type="button" class="chip" data-v="kinh-di">Kinh dị</button>
+                                    <button type="button" class="chip" data-v="vien-tuong">Viễn tưởng</button>
+                                    <button type="button" class="chip" data-v="tinh-cam">Tình cảm</button>
+                                    <button type="button" class="chip" data-v="hai">Hài</button>
+                                    <button type="button" class="chip" data-v="co-trang">Cổ trang</button>
+                                    <button type="button" class="chip" data-v="hoat-hinh">Hoạt hình</button>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="random-label">Số lượng</span>
+                                <div class="chip-row" id="rand-count">
+                                    <button type="button" class="chip" data-v="1">1</button>
+                                    <button type="button" class="chip active" data-v="5">5</button>
+                                    <button type="button" class="chip" data-v="10">10</button>
+                                    <button type="button" class="chip" data-v="15">15</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="random-actions" style="margin-top:14px;justify-content:flex-start">
+                            <button type="button" class="btn-random primary" onclick="randomAdvanced()">
+                                <i class="fa-solid fa-play"></i> QUAY
+                            </button>
+                        </div>
+                        <div id="random-advanced-grid" class="random-grid"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AUTO RECOMMENDATIONS -->
+            <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full reco-section" id="reco-section">
+                <div class="reco-head">
+                    <h2>✨ <span>Dành cho bạn</span> · tự động đề xuất</h2>
+                    <button type="button" class="reco-refresh" onclick="refreshRecommendations(true)">
+                        <i class="fa-solid fa-shuffle"></i> Đổi đề xuất
+                    </button>
+                </div>
+                <div id="reco-tonight" class="reco-tonight" style="display:none"></div>
+                <div id="reco-row" class="reco-row reco-empty">Đang chọn phim phù hợp...</div>
             </section>
 
             <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
@@ -3125,6 +3492,7 @@
         // CẤU HÌNH API VSMOV
         // ============================================================
         const API_BASE = 'https://vsmov.com/api';
+
         const ITEMS_PER_PAGE = 24;
         let currentPage = 1;
         let totalPages = 1;
@@ -3315,17 +3683,27 @@
             currentPage = page;
             
             if (!movies || movies.length === 0) {
-                container.innerHTML = `
+                const isSearch = !!searchKeyword;
+                container.innerHTML = isSearch ? `
                     <div class="col-span-full">
                         <div class="empty-state">
                             <div class="empty-icon"><i class="fa-solid fa-film"></i></div>
-                            <h3>${searchKeyword ? 'Không tìm thấy phim' : 'Chưa có phim mới'}</h3>
-                            <p>${searchKeyword ? `Không có kết quả cho "${searchKeyword}"` : 'Vui lòng quay lại sau!'}</p>
-                            ${searchKeyword ? `<button onclick="clearSearch()" class="empty-btn">Xem tất cả</button>` : ''}
+                            <h3>Không tìm thấy phim</h3>
+                            <p>Không có kết quả cho "${searchKeyword}"</p>
+                            <button onclick="clearSearch()" class="empty-btn">Xem tất cả</button>
                         </div>
                     </div>
+                ` : `
+                    <div class="api-error-box">
+                        <h3>😕 Không tải được danh sách phim</h3>
+                        <p>Mạng yếu, API đang bận, hoặc chưa có dữ liệu. Thử lại nhé.</p>
+                        <button type="button" onclick="renderMoviesFromAPI(${page})">
+                            <i class="fa-solid fa-rotate-right"></i> Thử lại
+                        </button>
+                    </div>
                 `;
-                document.getElementById('movie-count').textContent = '0';
+                const ce = document.getElementById('movie-count');
+                if (ce) ce.textContent = '0';
                 return;
             }
             
@@ -3343,7 +3721,7 @@
             container.innerHTML = mappedMovies.map((m, index) => `
                 <div onclick="viewMovieDetail('${m.slug}')" class="movie-card-premium card-stagger">
                     <div class="card-poster">
-                        <img src="${m.poster}" alt="${escapeHtml(m.title)}" loading="lazy"
+                        <img src="${m.poster}" alt="${escapeHtml(m.title)}" loading="lazy" decoding="async"
                              onerror="this.src='https://placehold.co/300x400/1a1a1a/666?text=No+Image'">
                         <div class="card-overlay">
                             <button class="watch-btn btn-ripple" onclick="event.stopPropagation(); playMovie('${m.slug}')">
@@ -5037,15 +5415,17 @@ function escapeHtml(text) {
             if (!canvas) return;
             const prefersReduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
-            if (prefersReduce) { canvas.style.display = 'none'; return; }
+            // Mobile / reduce motion: tắt hẳn để trang mượt hơn
+            if (prefersReduce || isMobile) { canvas.style.display = 'none'; return; }
 
+            const start = () => {
             const ctx = canvas.getContext('2d', { alpha: true });
             let particles = [];
             let w = 0, h = 0;
             let running = true;
             let last = 0;
-            const COUNT = isMobile ? 12 : 24;
-            const TARGET_FPS = isMobile ? 20 : 30;
+            const COUNT = 14;
+            const TARGET_FPS = 24;
             const FRAME_MS = 1000 / TARGET_FPS;
 
             function resize() {
@@ -5106,6 +5486,13 @@ function escapeHtml(text) {
                     requestAnimationFrame(tick);
                 }
             });
+            }; // end start()
+
+            if ('requestIdleCallback' in window) {
+                requestIdleCallback(start, { timeout: 2000 });
+            } else {
+                setTimeout(start, 400);
+            }
         })();
 
         // ============================================================
@@ -5301,7 +5688,7 @@ function escapeHtml(text) {
             return `<li class="bb-item" onclick="viewMovieDetail('${m.slug}')">
                 <span class="bb-rank">${rank}</span>
                 ${trend}
-                <img class="bb-thumb" src="${poster}" alt="" loading="lazy" onerror="this.src='https://placehold.co/34x48/1a1a1a/666?text=-'">
+                <img class="bb-thumb" src="${poster}" alt="" loading="lazy" decoding="async" onerror="this.src='https://placehold.co/34x48/1a1a1a/666?text=-'">
                 <span class="bb-name">${escapeHtml(m.title || m.name || 'Phim')}</span>
             </li>`;
         }
@@ -5699,8 +6086,440 @@ function escapeHtml(text) {
         });
 
         // ===== 8. INIT - KIỂM TRA PHIM MỚI =====
-        setInterval(checkNewMovies, 300000);
-        setTimeout(checkNewMovies, 10000);
+        setInterval(checkNewMovies, 600000);
+        setTimeout(checkNewMovies, 45000);
+
+
+        // ============================================================
+        // TỰ ĐỘNG ĐỀ XUẤT PHIM
+        // ============================================================
+        let recoCache = [];
+        let recoSeed = Date.now();
+
+        function getRecoSignals() {
+            let history = [];
+            try { history = JSON.parse(localStorage.getItem('roflix-watch-history') || '[]'); } catch (_) {}
+            history = Array.isArray(history) ? history : [];
+            history.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            const favs = (typeof getFavorites === 'function') ? getFavorites() : [];
+            const watched = new Set(history.map(h => h.slug).filter(Boolean));
+            favs.forEach(s => watched.add(s));
+            return { history, favs, watched };
+        }
+
+        function scoreMovie(m, signals) {
+            let score = 0;
+            const rating = parseFloat(m.rating) || 0;
+            score += Math.min(rating, 10) * 3;
+            // Ưu tiên phim mới hơn
+            const year = parseInt(m.year, 10);
+            if (!isNaN(year)) {
+                if (year >= 2023) score += 8;
+                else if (year >= 2018) score += 4;
+                else if (year >= 2010) score += 1;
+            }
+            // Tránh phim đã xem / đã thích (đề xuất cái mới)
+            if (signals.watched.has(m.slug)) score -= 50;
+            // Series có nhiều tập: nhẹ nhàng hơn cho binge
+            if ((m.episode_total || 0) > 1) score += 2;
+            // Random nhỏ để "Đổi đề xuất" không luôn giống nhau
+            score += (Math.abs(hashStr(m.slug + recoSeed)) % 100) / 20;
+            return score;
+        }
+
+        function hashStr(s) {
+            let h = 0;
+            for (let i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i) | 0;
+            return h;
+        }
+
+        async function fetchRecoPool() {
+            const endpoints = [
+                `${API_BASE}/quoc-gia/au-my?page=1`,
+                `${API_BASE}/quoc-gia/han-quoc?page=1`,
+                `${API_BASE}/danh-sach/phim-moi-cap-nhat?page=1`,
+                `${API_BASE}/danh-sach/phim-bo?page=1`
+            ];
+            const results = await Promise.allSettled(
+                endpoints.map(u => fetch(u).then(r => r.ok ? r.json() : { items: [] }))
+            );
+            const map = new Map();
+            results.forEach(res => {
+                if (res.status !== 'fulfilled') return;
+                const items = res.value.items || res.value.data || [];
+                items.forEach(raw => {
+                    const m = mapMovieData(raw);
+                    if (!m.slug || !isValidPosterUrl(m.poster)) return;
+                    if (!map.has(m.slug)) map.set(m.slug, m);
+                });
+            });
+            return [...map.values()];
+        }
+
+        function whyText(m, signals) {
+            const rating = parseFloat(m.rating) || 0;
+            if (signals.history.length && rating >= 7.5) return 'Gợi ý theo gu xem gần đây';
+            if (rating >= 8) return 'Đánh giá cao';
+            if ((parseInt(m.year, 10) || 0) >= 2024) return 'Mới cập nhật';
+            if ((m.episode_total || 0) > 1) return 'Phù hợp xem dài tập';
+            return 'Đề xuất hôm nay';
+        }
+
+        function renderRecoTonight(m) {
+            const box = document.getElementById('reco-tonight');
+            if (!box) return;
+            if (!m) { box.style.display = 'none'; return; }
+            box.style.display = 'grid';
+            box.onclick = () => viewMovieDetail(m.slug);
+            box.innerHTML = `
+                <img src="${m.poster}" alt="" onerror="this.src='https://placehold.co/120x72/1a1a1a/666?text=RoFlix'">
+                <div>
+                    <div class="tag">🎬 Tối nay coi gì?</div>
+                    <p class="name">${escapeHtml(m.title)}</p>
+                    <p class="meta"><i class="fa-solid fa-star text-amber-400"></i> ${m.rating || 'N/A'} · ${escapeHtml(m.year || '')} · ${escapeHtml(m.type || 'Phim')}</p>
+                </div>
+                <button type="button" class="go" onclick="event.stopPropagation(); playMovie('${m.slug}')">
+                    <i class="fa-solid fa-play"></i> Xem ngay
+                </button>
+            `;
+        }
+
+        function renderRecoRow(list, signals) {
+            const row = document.getElementById('reco-row');
+            if (!row) return;
+            if (!list.length) {
+                row.className = 'reco-row reco-empty';
+                row.textContent = 'Chưa lấy được đề xuất. Bấm “Đổi đề xuất” thử lại.';
+                return;
+            }
+            row.className = 'reco-row';
+            row.innerHTML = list.map(m => `
+                <div class="reco-card" onclick="viewMovieDetail('${m.slug}')">
+                    <img src="${m.poster}" alt="" loading="lazy" onerror="this.src='https://placehold.co/140x210/1a1a1a/666?text=No'">
+                    <div class="body">
+                        <p class="t">${escapeHtml(m.title)}</p>
+                        <p class="s"><i class="fa-solid fa-star text-amber-400"></i> ${m.rating || 'N/A'} · ${escapeHtml(m.year || '')}</p>
+                        <span class="reco-why">${escapeHtml(whyText(m, signals))}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function refreshRecommendations(shuffle = false) {
+            const row = document.getElementById('reco-row');
+            if (row) {
+                row.className = 'reco-row reco-empty';
+                row.textContent = 'Đang chọn phim phù hợp...';
+            }
+            if (shuffle) recoSeed = Date.now();
+            try {
+                if (!recoCache.length || shuffle) {
+                    recoCache = await fetchRecoPool();
+                }
+                const signals = getRecoSignals();
+                const ranked = recoCache
+                    .map(m => ({ m, s: scoreMovie(m, signals) }))
+                    .sort((a, b) => b.s - a.s)
+                    .map(x => x.m)
+                    .filter(m => !signals.watched.has(m.slug));
+
+                const pool = ranked.length ? ranked : recoCache;
+                const tonight = pool[0] || null;
+                const rowList = pool.slice(tonight ? 1 : 0, (tonight ? 1 : 0) + 12);
+                renderRecoTonight(tonight);
+                renderRecoRow(rowList, signals);
+            } catch (e) {
+                console.error('Reco error', e);
+                if (row) {
+                    row.className = 'reco-row reco-empty';
+                    row.textContent = 'Không tải được đề xuất. Kiểm tra mạng và thử lại.';
+                }
+            }
+        }
+
+
+
+        // ============================================================
+        // PHIM TUẦN NÀY (curated — sửa danh sách slug bên dưới)
+        // ============================================================
+        // Thêm/bớt phim bằng slug VSMOV (xem trên URL chi tiết hoặc API)
+        const WEEKLY_PICKS = [
+            // Ví dụ — đổi thành slug bạn muốn highlight tuần này:
+            // 'ten-slug-phim-1',
+            // 'ten-slug-phim-2',
+        ];
+
+        // Fallback: nếu WEEKLY_PICKS trống → lấy top Âu Mỹ + Hàn
+        async function loadWeeklyPicks() {
+            const row = document.getElementById('weekly-row');
+            if (!row) return;
+            row.innerHTML = '<div class="text-sm text-gray-500 py-2">Đang tải phim tuần này...</div>';
+            try {
+                let movies = [];
+                const slugs = WEEKLY_PICKS.filter(Boolean);
+                if (slugs.length) {
+                    const results = await Promise.all(
+                        slugs.slice(0, 10).map(async (slug) => {
+                            try {
+                                const d = await fetchMovieDetail(slug);
+                                return d ? mapMovieData(d) : null;
+                            } catch (_) { return null; }
+                        })
+                    );
+                    movies = results.filter(m => m && m.slug && isValidPosterUrl(m.poster));
+                }
+                if (!movies.length) {
+                    const [au, kr] = await Promise.all([
+                        fetch(`${API_BASE}/quoc-gia/au-my?page=1`).then(r => r.ok ? r.json() : { items: [] }),
+                        fetch(`${API_BASE}/quoc-gia/han-quoc?page=1`).then(r => r.ok ? r.json() : { items: [] })
+                    ]);
+                    const pool = [...(au.items || []), ...(kr.items || [])]
+                        .map(mapMovieData)
+                        .filter(m => m.slug && isValidPosterUrl(m.poster));
+                    // chọn 8 phim rating cao
+                    movies = pool
+                        .sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0))
+                        .slice(0, 8);
+                }
+                if (!movies.length) {
+                    row.innerHTML = '<div class="text-sm text-gray-500 py-2">Chưa có phim tuần này.</div>';
+                    return;
+                }
+                row.innerHTML = movies.map((m, i) => `
+                    <div class="weekly-card" onclick="viewMovieDetail('${m.slug}')">
+                        <span class="weekly-badge">#${i + 1} TUẦN NÀY</span>
+                        <img src="${m.poster}" alt="" loading="lazy" decoding="async"
+                             onerror="this.src='https://placehold.co/150x225/1a1a1a/666?text=No'">
+                        <div class="body">
+                            <p class="t">${escapeHtml(m.title)}</p>
+                            <p class="s"><i class="fa-solid fa-star text-amber-400"></i> ${m.rating || 'N/A'} · ${escapeHtml(m.year || '')}</p>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error(e);
+                row.innerHTML = `<div class="text-sm text-gray-500 py-2">Lỗi tải.
+                    <button type="button" onclick="loadWeeklyPicks()" class="text-amber-400 underline ml-1">Thử lại</button></div>`;
+            }
+        }
+
+        // ============================================================
+        // PWA
+        // ============================================================
+        let deferredPWAPrompt = null;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPWAPrompt = e;
+            if (localStorage.getItem('roflix-pwa-dismiss') === '1') return;
+            const banner = document.getElementById('pwa-banner');
+            if (banner) banner.classList.add('show');
+        });
+
+        async function installPWA() {
+            const banner = document.getElementById('pwa-banner');
+            if (!deferredPWAPrompt) {
+                if (banner) banner.classList.remove('show');
+                if (typeof showToastPro === 'function') {
+                    showToastPro('info', 'Cài app', 'Trên iPhone: Share → Thêm vào Màn hình chính');
+                }
+                return;
+            }
+            deferredPWAPrompt.prompt();
+            try { await deferredPWAPrompt.userChoice; } catch (_) {}
+            deferredPWAPrompt = null;
+            if (banner) banner.classList.remove('show');
+        }
+
+        function dismissPWA() {
+            localStorage.setItem('roflix-pwa-dismiss', '1');
+            const banner = document.getElementById('pwa-banner');
+            if (banner) banner.classList.remove('show');
+        }
+
+        function registerServiceWorker() {
+            if (!('serviceWorker' in navigator)) return;
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => {
+                    console.warn('SW register fail', err);
+                });
+            });
+        }
+        registerServiceWorker();
+
+
+        // ============================================================
+        // RANDOM PHIM
+        // ============================================================
+        let randomQuickMovie = null;
+        const randomState = { type: '', country: '', genre: '', count: 5 };
+
+        function openRandomPanel() {
+            navigateTo('main-site');
+            setTimeout(() => {
+                const el = document.getElementById('random-panel');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 80);
+            if (!randomQuickMovie) randomQuick();
+        }
+
+        function bindRandomChips() {
+            const bind = (id, key, multi = false) => {
+                const box = document.getElementById(id);
+                if (!box) return;
+                box.querySelectorAll('.chip').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        box.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        randomState[key] = btn.getAttribute('data-v') || '';
+                        if (key === 'count') randomState.count = parseInt(btn.getAttribute('data-v') || '5', 10) || 5;
+                    });
+                });
+            };
+            bind('rand-type', 'type');
+            bind('rand-country', 'country');
+            bind('rand-genre', 'genre');
+            bind('rand-count', 'count');
+        }
+
+        async function fetchRandomPool(opts = {}) {
+            const page = opts.page || (1 + Math.floor(Math.random() * 5));
+            let url;
+            if (opts.genre) {
+                url = `${API_BASE}/the-loai/${opts.genre}?page=${page}`;
+            } else if (opts.country) {
+                url = `${API_BASE}/quoc-gia/${opts.country}?page=${page}`;
+            } else if (opts.type) {
+                url = `${API_BASE}/danh-sach/${opts.type}?page=${page}`;
+            } else {
+                // mix: đôi khi Âu Mỹ, Hàn, mới cập nhật
+                const modes = [
+                    `${API_BASE}/danh-sach/phim-moi-cap-nhat?page=${page}`,
+                    `${API_BASE}/quoc-gia/au-my?page=${page}`,
+                    `${API_BASE}/quoc-gia/han-quoc?page=${page}`,
+                    `${API_BASE}/danh-sach/phim-bo?page=${page}`,
+                    `${API_BASE}/danh-sach/phim-le?page=${page}`
+                ];
+                url = modes[Math.floor(Math.random() * modes.length)];
+            }
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('random fetch fail');
+            const data = await res.json();
+            const items = (data.items || data.data || [])
+                .map(mapMovieData)
+                .filter(m => m.slug && isValidPosterUrl(m.poster));
+            return items;
+        }
+
+        function shuffle(arr) {
+            const a = arr.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        async function randomQuick() {
+            const box = document.getElementById('random-quick');
+            const watchBtn = document.getElementById('random-quick-watch');
+            if (box) box.innerHTML = '<p class="meta">Đang quay...</p>';
+            if (watchBtn) watchBtn.style.display = 'none';
+            try {
+                let pool = await fetchRandomPool({});
+                if (pool.length < 5) {
+                    const more = await fetchRandomPool({ page: 1 + Math.floor(Math.random() * 3) });
+                    pool = [...pool, ...more];
+                }
+                if (!pool.length) {
+                    if (box) box.innerHTML = '<p class="meta">Không lấy được phim. Thử lại.</p>';
+                    return;
+                }
+                const m = pool[Math.floor(Math.random() * pool.length)];
+                randomQuickMovie = m;
+                if (box) {
+                    box.innerHTML = `
+                        <img src="${m.poster}" alt="" onclick="viewMovieDetail('${m.slug}')"
+                             onerror="this.src='https://placehold.co/160x240/1a1a1a/666?text=No'">
+                        <div class="title">${escapeHtml(m.title)}</div>
+                        <div class="meta"><i class="fa-solid fa-star text-amber-400"></i> ${m.rating || 'N/A'} · ${escapeHtml(m.year || '')} · ${escapeHtml(m.type || 'Phim')}</div>
+                    `;
+                }
+                if (watchBtn) watchBtn.style.display = '';
+            } catch (e) {
+                console.error(e);
+                if (box) box.innerHTML = '<p class="meta">Lỗi mạng. Bấm quay lại.</p>';
+            }
+        }
+
+        function randomQuickWatch() {
+            if (!randomQuickMovie) return;
+            playMovie(randomQuickMovie.slug);
+        }
+
+        async function randomAdvanced() {
+            const grid = document.getElementById('random-advanced-grid');
+            if (grid) grid.innerHTML = '<div style="grid-column:1/-1;color:#9ca3af;font-size:0.85rem">Đang quay...</div>';
+            try {
+                const need = randomState.count || 5;
+                let pool = [];
+                // lấy 2-3 page để đủ random
+                for (let i = 0; i < 3 && pool.length < need * 3; i++) {
+                    const batch = await fetchRandomPool({
+                        type: randomState.type,
+                        country: randomState.country,
+                        genre: randomState.genre,
+                        page: 1 + Math.floor(Math.random() * 6)
+                    });
+                    const map = new Map(pool.map(m => [m.slug, m]));
+                    batch.forEach(m => map.set(m.slug, m));
+                    pool = [...map.values()];
+                }
+                const picked = shuffle(pool).slice(0, need);
+                if (!picked.length) {
+                    if (grid) grid.innerHTML = '<div style="grid-column:1/-1;color:#9ca3af">Không có kết quả với bộ lọc này.</div>';
+                    return;
+                }
+                if (grid) {
+                    grid.innerHTML = picked.map(m => `
+                        <div class="item" onclick="viewMovieDetail('${m.slug}')">
+                            <img src="${m.poster}" alt="" loading="lazy" decoding="async"
+                                 onerror="this.src='https://placehold.co/150x225/1a1a1a/666?text=No'">
+                            <div class="cap">${escapeHtml(m.title)}</div>
+                        </div>
+                    `).join('');
+                }
+                // nếu count=1 cũng cập nhật quick
+                if (picked.length === 1) {
+                    randomQuickMovie = picked[0];
+                    const box = document.getElementById('random-quick');
+                    const watchBtn = document.getElementById('random-quick-watch');
+                    const m = picked[0];
+                    if (box) {
+                        box.innerHTML = `
+                            <img src="${m.poster}" alt="" onclick="viewMovieDetail('${m.slug}')">
+                            <div class="title">${escapeHtml(m.title)}</div>
+                            <div class="meta"><i class="fa-solid fa-star text-amber-400"></i> ${m.rating || 'N/A'} · ${escapeHtml(m.year || '')}</div>
+                        `;
+                    }
+                    if (watchBtn) watchBtn.style.display = '';
+                }
+            } catch (e) {
+                console.error(e);
+                if (grid) grid.innerHTML = '<div style="grid-column:1/-1;color:#9ca3af">Lỗi tải. Thử lại.</div>';
+            }
+        }
+
+        // Phím R = random nhanh (không khi đang gõ input)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'r' || e.key === 'R') {
+                const tag = (e.target && e.target.tagName) || '';
+                if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) return;
+                if (e.ctrlKey || e.metaKey || e.altKey) return;
+                randomQuick();
+            }
+        });
+
 
         // ============================================================
         // WINDOW ONLOAD
@@ -5711,10 +6530,29 @@ function escapeHtml(text) {
                 document.documentElement.classList.remove('dark');
                 updateThemeIcon(true);
             }
-            
+
+            bindRandomChips();
+
+            // Critical path: danh sách phim trước
             renderMoviesFromAPI(1);
-            initHeroSlider();
-            renderBottomBoards();
+
+            // Secondary: hero sau 1 frame
+            requestAnimationFrame(() => {
+                initHeroSlider();
+            });
+
+            // Tertiary: boards + đề xuất khi rảnh
+            const loadSecondary = () => {
+                loadWeeklyPicks();
+                renderBottomBoards();
+                refreshRecommendations(false);
+            };
+            if ('requestIdleCallback' in window) {
+                requestIdleCallback(loadSecondary, { timeout: 2500 });
+            } else {
+                setTimeout(loadSecondary, 500);
+            }
+
             checkUserAuthStatus();
             checkDailyLogin();
             
@@ -5774,5 +6612,67 @@ function escapeHtml(text) {
             console.log('✨ Tính năng: Lọc quốc gia, Xem tiếp, Thông báo, Phím tắt');
         };
     </script>
+
+    <div id="pwa-banner" class="pwa-banner" role="dialog" aria-label="Cài app">
+        <p>Cài <b>RoFlix</b> ra màn hình chính để mở nhanh hơn.</p>
+        <button type="button" class="yes" onclick="installPWA()">Cài</button>
+        <button type="button" class="no" onclick="dismissPWA()">Để sau</button>
+    </div>
+
+    <!-- DevTools notice (không phải bảo mật thật) -->
+    <div id="devtools-block" style="
+      display:none; position:fixed; inset:0; z-index:999999;
+      background:rgba(9,10,15,0.97); color:#fff;
+      flex-direction:column; align-items:center; justify-content:center;
+      text-align:center; padding:24px; font-family:system-ui,sans-serif;
+    ">
+      <div style="font-size:3rem;margin-bottom:12px">⚠️</div>
+      <h2 style="margin:0 0 8px;font-size:1.4rem;font-weight:800">Vui lòng tắt F12 / DevTools</h2>
+      <p style="margin:0;color:#9ca3af;max-width:380px;line-height:1.55;font-size:0.95rem">
+        Để xem phim mượt hơn, hãy đóng công cụ nhà phát triển rồi tiếp tục trên RoFlix.
+      </p>
+      <p style="margin:14px 0 0;color:#6b7280;font-size:0.8rem">Đóng DevTools để ẩn thông báo này</p>
+    </div>
+    <script>
+    (function () {
+      const block = document.getElementById('devtools-block');
+      if (!block) return;
+      let open = false;
+      function setBlock(state) {
+        if (open === state) return;
+        open = state;
+        block.style.display = state ? 'flex' : 'none';
+        try { document.body.style.overflow = state ? 'hidden' : ''; } catch (_) {}
+      }
+      document.addEventListener('keydown', function (e) {
+        const k = (e.key || '').toUpperCase();
+        if (
+          e.key === 'F12' ||
+          (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(k)) ||
+          (e.ctrlKey && k === 'U')
+        ) {
+          e.preventDefault();
+          setBlock(true);
+        }
+      }, true);
+      document.addEventListener('contextmenu', function (e) {
+        e.preventDefault();
+      });
+      function check() {
+        const threshold = 160;
+        const widthDiff = window.outerWidth - window.innerWidth > threshold;
+        const heightDiff = window.outerHeight - window.innerHeight > threshold;
+        // Chỉ bật khi lệch rõ (tránh false positive trên mobile)
+        if (window.innerWidth < 768) {
+          setBlock(false);
+          return;
+        }
+        setBlock(widthDiff || heightDiff);
+      }
+      setInterval(check, 900);
+      window.addEventListener('resize', check);
+    })();
+    </script>
+
 </body>
 </html>
