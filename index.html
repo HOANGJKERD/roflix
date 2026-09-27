@@ -4183,7 +4183,19 @@
         // ============================================================
         // UTILITY
         // ============================================================
-        function escapeHtml(text) {
+        
+        function stripHtml(html) {
+            if (html == null || html === '') return '';
+            try {
+                const tmp = document.createElement('div');
+                tmp.innerHTML = String(html);
+                return (tmp.textContent || tmp.innerText || '').replace(/\s+/g, ' ').trim();
+            } catch (_) {
+                return String(html).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+            }
+        }
+
+function escapeHtml(text) {
             if (!text) return '';
             const d = document.createElement('div');
             d.textContent = text;
@@ -5148,6 +5160,8 @@
                 }
             } catch (e) {
                 console.error('Hero slider error:', e);
+                const descEl = document.getElementById('hero-desc');
+                if (descEl) descEl.textContent = 'Không tải được phim đề xuất. Kéo xuống để xem danh sách.';
             }
         }
 
@@ -5197,22 +5211,35 @@
                     if (subEl) subEl.textContent = m.year && m.year !== 'N/A' ? ` (${m.year})` : '';
                 }
 
+                // Gắn nút TRƯỚC (tránh lỗi mô tả làm mất onclick)
+                const slugSafe = String(m.slug || '').replace(/'/g, "\'");
+                const btnDetail = document.getElementById('hero-btn-detail');
+                const btnPlay = document.getElementById('hero-btn-play');
+                if (btnDetail) {
+                    btnDetail.onclick = slugSafe ? () => viewMovieDetail(m.slug) : null;
+                    btnDetail.disabled = !slugSafe;
+                }
+                if (btnPlay) {
+                    btnPlay.onclick = slugSafe ? () => playMovie(m.slug) : null;
+                    btnPlay.disabled = !slugSafe;
+                }
+
                 const descEl = document.getElementById('hero-desc');
                 if (descEl) {
-                    let desc = stripHtml(m.summary || m.origin_name || '');
+                    let desc = '';
+                    try {
+                        desc = (typeof stripHtml === 'function'
+                            ? stripHtml(m.summary || m.origin_name || '')
+                            : String(m.summary || m.origin_name || '').replace(/<[^>]*>/g, ' ')).trim();
+                    } catch (_) { desc = ''; }
                     if (!desc || desc === 'Chưa có tóm tắt') {
                         desc = m.origin_name
                             ? `${m.origin_name}${m.year && m.year !== 'N/A' ? ' · ' + m.year : ''} · ${m.type || 'Phim'}`
-                            : 'Phim nổi bật đang được cập nhật trên RoFlix.';
+                            : (m.year && m.year !== 'N/A' ? `Năm ${m.year} · Phim nổi bật trên RoFlix` : 'Phim nổi bật trên RoFlix.');
                     }
                     if (desc.length > 180) desc = desc.slice(0, 177) + '...';
                     descEl.textContent = desc;
                 }
-
-                const btnDetail = document.getElementById('hero-btn-detail');
-                const btnPlay = document.getElementById('hero-btn-play');
-                if (btnDetail) btnDetail.setAttribute('onclick', `viewMovieDetail('${m.slug}')`);
-                if (btnPlay) btnPlay.setAttribute('onclick', `playMovie('${m.slug}')`);
 
                 renderHeroDots();
                 if (box) {
