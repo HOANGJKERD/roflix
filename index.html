@@ -3576,15 +3576,27 @@
         // ============================================================
         // PHÁT PHIM
         // ============================================================
-        function playMovie(slug) {
-            (async () => {
+        async function playMovie(slug) {
+            try {
                 await viewMovieDetail(slug);
+                let tries = 0;
+                while (currentEpisodeList.length === 0 && tries < 15) {
+                    await new Promise(r => setTimeout(r, 120));
+                    tries++;
+                }
                 if (currentEpisodeList.length > 0) {
                     playMovieByIndex(0);
                 } else {
-                    showToast('error', 'Chưa có tập', 'Phim này chưa có link phát trên API.');
+                    if (typeof showToastPro === 'function') {
+                        showToastPro('error', 'Chưa có tập', 'Phim này chưa có link phát trên API.');
+                    } else {
+                        showToast('error', 'Chưa có tập', 'Phim này chưa có link phát trên API.');
+                    }
                 }
-            })();
+            } catch (e) {
+                console.error(e);
+                if (typeof showToastPro === 'function') showToastPro('error', 'Lỗi', 'Không mở được phim');
+            }
         }
 
         function renderPlayEpisodeGrid(activeIndex) {
@@ -5394,45 +5406,76 @@
         let currentCountry = '';
 
         function filterByCountry(slug, title) {
-            currentCountry = slug;
+            currentCountry = slug || '';
             
             document.querySelectorAll('.country-pill').forEach(el => {
-                el.classList.toggle('active', el.dataset.country === slug);
+                el.classList.toggle('active', (el.dataset.country || '') === (slug || ''));
             });
             
             searchKeyword = '';
             currentGenreSlug = '';
-            currentCountrySlug = slug;
+            currentCountrySlug = slug || '';
             homePriorityMode = !slug;
             currentListEndpoint = 'phim-moi-cap-nhat';
             
+            const flags = {
+                'au-my': '🇺🇸',
+                'han-quoc': '🇰🇷',
+                'trung-quoc': '🇨🇳',
+                'nhat-ban': '🇯🇵',
+                'thai-lan': '🇹🇭',
+                'an-do': '🇮🇳',
+                'viet-nam': '🇻🇳'
+            };
             const titleEl = document.getElementById('list-title');
-            if (titleEl) titleEl.textContent = slug ? `🇨🇳 ${title}` : 'Phim nổi bật';
+            if (titleEl) {
+                titleEl.textContent = slug
+                    ? `${flags[slug] || '🌍'} ${title || slug}`
+                    : 'Phim Âu Mỹ & Hàn nổi bật';
+            }
+            const si = document.getElementById('search-input');
+            const sm = document.getElementById('search-input-mobile');
+            if (si) si.value = '';
+            if (sm) sm.value = '';
             
             renderMoviesFromAPI(1);
             navigateTo('main-site');
         }
 
         // ===== 2. XEM TIẾP (CONTINUE WATCHING) =====
-        function showContinueWatching() {
+        async function showContinueWatching() {
             const history = JSON.parse(localStorage.getItem('roflix-watch-history') || '[]');
-            if (history.length === 0) {
+            if (!history.length) {
                 showToastPro('info', 'Chưa có phim', 'Bạn chưa xem phim nào, hãy bắt đầu ngay!');
                 return;
             }
             
-            const last = history[history.length - 1];
-            if (last && last.slug) {
-                showToastPro('info', '⏳ Đang tải', `Tiếp tục phim...`);
-                viewMovieDetail(last.slug);
-                setTimeout(() => {
-                    if (currentEpisodeList.length > 0) {
-                        const epIndex = Math.min((last.episode || 0), currentEpisodeList.length - 1);
-                        playMovieByIndex(epIndex);
-                    }
-                }, 2000);
-            } else {
+            // Lấy phim xem gần nhất theo timestamp
+            const sorted = history.slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            const last = sorted[0];
+            if (!last || !last.slug) {
                 showToastPro('error', 'Lỗi', 'Không tìm thấy phim đã xem');
+                return;
+            }
+            
+            try {
+                showToastPro('info', '⏳ Đang tải', 'Tiếp tục phim...');
+                await viewMovieDetail(last.slug);
+                // Đợi episodes được map vào currentEpisodeList
+                let tries = 0;
+                while (currentEpisodeList.length === 0 && tries < 20) {
+                    await new Promise(r => setTimeout(r, 150));
+                    tries++;
+                }
+                if (currentEpisodeList.length > 0) {
+                    const epIndex = Math.min(Math.max(0, last.episode || 0), currentEpisodeList.length - 1);
+                    playMovieByIndex(epIndex);
+                } else {
+                    showToastPro('warning', 'Chưa có tập', 'Đã mở trang phim nhưng chưa lấy được danh sách tập.');
+                }
+            } catch (e) {
+                console.error(e);
+                showToastPro('error', 'Lỗi', 'Không thể tiếp tục phim này');
             }
         }
 
@@ -5563,36 +5606,55 @@
 
         // ===== 5. KIỂM TRA PHIM MỚI =====
         let checkedSlugs = new Set();
+        let newMoviesSeeded = false;
 
         async function checkNewMovies() {
             try {
                 const res = await fetch(`${API_BASE}/danh-sach/phim-moi-cap-nhat?page=1`);
+                if (!res.ok) return;
                 const data = await res.json();
                 const movies = data.items || data.data || [];
-                const newMovies = movies.filter(m => {
-                    const slug = m.slug || m._id || '';
-                    if (!slug || checkedSlugs.has(slug)) return false;
-                    checkedSlugs.add(slug);
-                    return true;
-                });
-                if (newMovies.length > 0) {
-                    addNotification('🎬 Phim mới!', `Có ${newMovies.length} bộ phim mới vừa cập nhật.`, 'success');
+                const slugs = movies.map(m => m.slug || m._id || '').filter(Boolean);
+
+                // Lần đầu: chỉ seed, không bắn thông báo spam
+                if (!newMoviesSeeded) {
+                    slugs.forEach(s => checkedSlugs.add(s));
+                    newMoviesSeeded = true;
+                    try { localStorage.setItem('roflix-checked-slugs', JSON.stringify([...checkedSlugs])); } catch (_) {}
+                    return;
+                }
+
+                const brandNew = slugs.filter(s => !checkedSlugs.has(s));
+                brandNew.forEach(s => checkedSlugs.add(s));
+                if (brandNew.length > 0) {
+                    addNotification('🎬 Phim mới!', `Có ${brandNew.length} bộ phim mới vừa cập nhật.`, 'success');
+                    try { localStorage.setItem('roflix-checked-slugs', JSON.stringify([...checkedSlugs])); } catch (_) {}
                 }
             } catch (e) {}
         }
 
+        // Khôi phục slug đã biết (tránh báo lại sau F5)
+        try {
+            const saved = JSON.parse(localStorage.getItem('roflix-checked-slugs') || '[]');
+            if (Array.isArray(saved) && saved.length) {
+                saved.forEach(s => checkedSlugs.add(s));
+                newMoviesSeeded = true;
+            }
+        } catch (_) {}
+
         // ===== 6. SAVE WATCH HISTORY =====
         function saveWatchHistory(slug, episode, progress) {
-            const history = JSON.parse(localStorage.getItem('roflix-watch-history') || '[]');
-            const existing = history.find(h => h.slug === slug);
-            if (existing) {
-                existing.episode = episode;
-                existing.progress = progress;
-                existing.timestamp = Date.now();
-            } else {
-                history.push({ slug, episode, progress, timestamp: Date.now() });
-            }
-            if (history.length > 50) history.splice(0, history.length - 50);
+            if (!slug || slug === 'unknown') return;
+            let history = JSON.parse(localStorage.getItem('roflix-watch-history') || '[]');
+            history = history.filter(h => h.slug !== slug);
+            history.push({
+                slug,
+                episode: episode || 0,
+                progress: progress || 0,
+                timestamp: Date.now(),
+                title: (typeof currentMovieTitle !== 'undefined' ? currentMovieTitle : '') || slug
+            });
+            if (history.length > 50) history = history.slice(-50);
             localStorage.setItem('roflix-watch-history', JSON.stringify(history));
         }
 
@@ -5674,9 +5736,15 @@
             
             renderLeaderboard();
             
+            // Badge thông báo + panel
+            try {
+                if (typeof updateNotificationBadge === 'function') updateNotificationBadge();
+                if (typeof renderNotifications === 'function') renderNotifications();
+            } catch (_) {}
+            
             console.log('🔥 RoFlix Pro - Đã nâng cấp thành công!');
             console.log('📦 Nguồn dữ liệu: VSMOV.COM');
-            console.log('✨ Tính năng mới: Lọc quốc gia, Xem tiếp, Thông báo, Phím tắt');
+            console.log('✨ Tính năng: Lọc quốc gia, Xem tiếp, Thông báo, Phím tắt');
         };
     </script>
 </body>
