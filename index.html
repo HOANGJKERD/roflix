@@ -2670,10 +2670,6 @@
                         <span>XEM NGAY</span>
                         <i class="fa-solid fa-arrow-right"></i>
                     </button>
-                    <button onclick="openAuthModal('login')" class="w-full sm:w-auto bg-gray-800/80 hover:bg-gray-700 text-white font-bold px-8 py-4 rounded-xl text-sm border border-gray-700 transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-user-shield"></i>
-                        <span>Thành Viên</span>
-                    </button>
                 </div>
             </div>
             <div class="text-center text-xs text-gray-500 font-medium">
@@ -2841,10 +2837,9 @@
                             </div>
                         </div>
 
-                        <div id="user-nav-container">
-                            <button onclick="openAuthModal('login')" class="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-gray-950 font-extrabold px-4 py-2 rounded-full text-xs flex items-center gap-2 shadow-md transition active:scale-95 btn-ripple">
-                                <i class="fa-solid fa-user"></i>
-                                <span class="hidden sm:inline">Thành viên</span>
+                        <div id="user-nav-container" class="flex items-center gap-2">
+                            <button id="user-login-button" onclick="openAuthModal('login')" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black font-extrabold px-4 py-2 text-xs sm:text-sm shadow-lg transition active:scale-95 whitespace-nowrap">
+                                <i class="fa-solid fa-user"></i><span>Đăng nhập</span>
                             </button>
                         </div>
 
@@ -2957,6 +2952,12 @@
 
             <!-- ===== BỘ LỌC THEO QUỐC GIA ===== -->
             <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-4">
+                <div class="flex flex-wrap gap-2 my-3" id="roflix-upgrade-toolbar">
+                    <button class="source-pill" onclick="openRoflixTools('filters')">🔎 Bộ lọc nâng cao</button>
+                    <button class="source-pill" onclick="openRoflixTools('collections')">📚 Bộ sưu tập</button>
+                    <button class="source-pill" onclick="openRoflixTools('sync')">🔄 Đồng bộ thiết bị</button>
+                    <button class="source-pill" onclick="openRoflixTools('admin')">🛠️ Quản trị</button>
+                </div>
                 <div class="source-switch" id="source-switch">
                     <span class="src-label">Nguồn phim</span>
                     <button type="button" class="source-pill active" data-source="vsmov" onclick="switchSource('vsmov')">VSMOV · chính</button>
@@ -3158,7 +3159,7 @@
                     <div id="reco-preference-chips" class="flex flex-wrap gap-2"></div>
                 </div>
                 <div id="reco-tonight" class="reco-tonight" style="display:none"></div>
-                <div id="reco-row" class="reco-row reco-empty">Đang chọn phim phù hợp...</div>
+                <div id="reco-row" class="reco-row reco-empty">Đang tổng hợp đề xuất từ VSMOV + KKPhim...</div>
             </section>
 
             <!-- ===== BOTTOM BOARDS ===== -->
@@ -3491,7 +3492,7 @@
                     </div>
                     <div class="relative z-10 space-y-3">
                         <div class="bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs p-3 rounded-xl flex items-center gap-2">
-                            <i class="fa-solid fa-shield-halved"></i> <span>Bảo mật dữ liệu cá nhân tuyệt đối.</span>
+                            <i class="fa-solid fa-shield-halved"></i> <span>Tài khoản bản HTML được lưu trên trình duyệt này.</span>
                         </div>
                         <div class="bg-purple-500/10 border border-purple-500/30 text-purple-400 text-xs p-3 rounded-xl flex items-center gap-2">
                             <i class="fa-solid fa-rocket"></i> <span>Đăng nhập để lưu lịch sử và yêu thích.</span>
@@ -4000,7 +4001,7 @@
                         <img src="${m.poster}" alt="${escapeHtml(m.title)}" loading="lazy" decoding="async"
                              onerror="this.src='https://placehold.co/300x400/1a1a1a/666?text=No+Image'">
                         <div class="card-overlay">
-                            <button class="watch-btn btn-ripple" onclick="event.stopPropagation(); playMovie('${m.slug}')">
+                            <button class="watch-btn btn-ripple" onclick="event.stopPropagation(); playMovie('${m.slug}', '${m._src || ''}')">
                                 <i class="fa-solid fa-play"></i> Xem Ngay
                             </button>
                             <div class="card-actions">
@@ -4082,13 +4083,13 @@
         // ============================================================
         // CHI TIẾT PHIM
         // ============================================================
-        async function viewMovieDetail(slug) {
+        async function viewMovieDetail(slug, preferredSrc) {
             if (!slug) {
                 showToast('error', 'Lỗi', 'Không tìm thấy phim!');
                 return;
             }
             
-            const movieData = await fetchMovieDetail(slug);
+            const movieData = await fetchMovieDetail(slug, preferredSrc);
             if (!movieData) return;
             
             const movie = mapMovieData(movieData);
@@ -4230,9 +4231,9 @@
         // ============================================================
         // PHÁT PHIM
         // ============================================================
-        async function playMovie(slug) {
+        async function playMovie(slug, preferredSrc) {
             try {
-                await viewMovieDetail(slug);
+                await viewMovieDetail(slug, preferredSrc);
                 let tries = 0;
                 while (currentEpisodeList.length === 0 && tries < 15) {
                     await new Promise(r => setTimeout(r, 120));
@@ -4777,40 +4778,29 @@
         }
 
         function checkUserAuthStatus() {
-            const user = JSON.parse(localStorage.getItem('roflix-current-user') || 'null');
             const navContainer = document.getElementById('user-nav-container');
+            if (!navContainer) return;
+            const rawUser = localStorage.getItem('roflix-current-user');
+            let user = null;
+            try { user = rawUser ? JSON.parse(rawUser) : null; } catch (_) { user = null; }
 
-            if (user) {
+            navContainer.classList.remove('hidden');
+            navContainer.setAttribute('aria-hidden', 'false');
+            if (user && (user.name || user.email)) {
+                const displayName = String(user.name || user.email).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
                 navContainer.innerHTML = `
                     <div class="relative group">
-                        <button class="bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-3.5 py-2 rounded-full text-xs flex items-center gap-2 shadow-md transition">
-                            <i class="fa-solid fa-circle-user text-sm"></i>
-                            <span class="max-w-[80px] truncate">${escapeHtml(user.name)}</span>
-                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        <button class="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-gray-900/90 hover:bg-gray-800 text-white font-bold px-3 py-2 text-xs sm:text-sm transition max-w-[180px]" aria-label="Tài khoản">
+                            <span class="w-6 h-6 rounded-full bg-amber-500 text-black flex items-center justify-center"><i class="fa-solid fa-user text-[10px]"></i></span>
+                            <span class="truncate max-w-[100px]">${displayName}</span><i class="fa-solid fa-chevron-down text-[9px]"></i>
                         </button>
-                        <div class="absolute right-0 mt-2 w-48 glass-premium p-2 flex flex-col gap-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                            <div class="px-3 py-2 border-b border-gray-800 text-[11px] text-gray-400 truncate">
-                                ${escapeHtml(user.email || user.name)}
-                            </div>
-                            <a href="#" onclick="navigateToProfile(); return false;" class="text-xs py-2 px-3 rounded-lg hover:bg-amber-500/10 hover:text-amber-500 flex items-center gap-2 text-gray-300 transition">
-                                <i class="fa-solid fa-user"></i> Hồ sơ
-                            </a>
-                            <a href="#" onclick="showFavorites(); return false;" class="text-xs py-2 px-3 rounded-lg hover:bg-amber-500/10 hover:text-amber-500 flex items-center gap-2 text-gray-300 transition">
-                                <i class="fa-solid fa-bookmark text-amber-500"></i> Yêu thích
-                            </a>
-                            <button onclick="handleLogout()" class="text-xs py-2 px-3 rounded-lg hover:bg-red-500/10 text-red-400 flex items-center gap-2 text-left w-full transition">
-                                <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
-                            </button>
+                        <div class="absolute right-0 mt-2 w-44 glass-premium p-2 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible focus-within:opacity-100 focus-within:visible transition-all z-50">
+                            <button onclick="navigateToProfile()" class="w-full text-left px-3 py-2 rounded-lg text-xs text-white hover:bg-amber-500/10 hover:text-amber-400"><i class="fa-solid fa-user mr-2"></i>Hồ sơ của tôi</button>
+                            <button onclick="handleLogout()" class="w-full text-left px-3 py-2 rounded-lg text-xs text-red-400 hover:bg-red-500/10"><i class="fa-solid fa-right-from-bracket mr-2"></i>Đăng xuất</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             } else {
-                navContainer.innerHTML = `
-                    <button onclick="openAuthModal('login')" class="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-gray-950 font-extrabold px-4 py-2 rounded-full text-xs flex items-center gap-2 shadow-md transition active:scale-95 btn-ripple">
-                        <i class="fa-solid fa-user"></i>
-                        <span class="hidden sm:inline">Thành viên</span>
-                    </button>
-                `;
+                navContainer.innerHTML = `<button id="user-login-button" onclick="openAuthModal('login')" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black font-extrabold px-4 py-2 text-xs sm:text-sm shadow-lg transition active:scale-95 whitespace-nowrap"><i class="fa-solid fa-user"></i><span>Đăng nhập</span></button>`;
             }
         }
 
@@ -6556,24 +6546,36 @@ function escapeHtml(text) {
             return h;
         }
 
+        // Đề xuất gộp song song cả VSMOV và KKPhim, không phụ thuộc nguồn đang chọn ở giao diện.
+        // Mỗi phim giữ _src để khi bấm vào sẽ mở đúng API nguồn đã cung cấp phim đó.
         async function fetchRecoPool() {
             const paths = [
-                '/quoc-gia/au-my?page=1',
-                '/quoc-gia/han-quoc?page=1',
                 '/danh-sach/phim-moi-cap-nhat?page=1',
-                '/danh-sach/phim-bo?page=1'
+                '/danh-sach/phim-bo?page=1',
+                '/quoc-gia/au-my?page=1',
+                '/quoc-gia/han-quoc?page=1'
             ];
-            const results = await Promise.allSettled(paths.map(p => fetchListWithFallback(p)));
-            const map = new Map();
-            results.forEach(res => {
-                if (res.status !== 'fulfilled') return;
-                const items = mapListResultItems(res.value);
-                items.forEach(m => {
-                    if (!m.slug || !isValidPosterUrl(m.poster)) return;
-                    if (!map.has(m.slug)) map.set(m.slug, m);
-                });
-            });
-            return [...map.values()];
+            const jobs = [];
+            for (const sid of ['vsmov', 'kkphim']) {
+                for (const path of paths) {
+                    jobs.push((async () => {
+                        const data = await fetchJson(srcListUrl(path, sid));
+                        const { items } = unwrapList(data);
+                        return items.map(item => { item._src = sid; return mapMovieData(item); });
+                    })());
+                }
+            }
+            const results = await Promise.allSettled(jobs);
+            const bySourceAndSlug = new Map();
+            for (const result of results) {
+                if (result.status !== 'fulfilled') continue;
+                for (const movie of result.value) {
+                    if (!movie.slug || !isValidPosterUrl(movie.poster)) continue;
+                    const key = `${movie._src || 'unknown'}:${movie.slug}`;
+                    if (!bySourceAndSlug.has(key)) bySourceAndSlug.set(key, movie);
+                }
+            }
+            return [...bySourceAndSlug.values()];
         }
 
         function whyText(m, signals) {
@@ -6590,15 +6592,15 @@ function escapeHtml(text) {
             if (!box) return;
             if (!m) { box.style.display = 'none'; return; }
             box.style.display = 'grid';
-            box.onclick = () => viewMovieDetail(m.slug);
+            box.onclick = () => viewMovieDetail(m.slug, m._src);
             box.innerHTML = `
                 <img src="${m.poster}" alt="" onerror="this.src='https://placehold.co/120x72/1a1a1a/666?text=RoFlix'">
                 <div>
                     <div class="tag">🎬 Tối nay coi gì?</div>
                     <p class="name">${escapeHtml(m.title)}</p>
-                    <p class="meta"><i class="fa-solid fa-star text-amber-400"></i> ${m.rating || 'N/A'} · ${escapeHtml(m.year || '')} · ${escapeHtml(m.type || 'Phim')}</p>
+                    <p class="meta"><i class="fa-solid fa-star text-amber-400"></i> ${m.rating || 'N/A'} · ${escapeHtml(m.year || '')} · ${escapeHtml(m.type || 'Phim')} · ${escapeHtml((m._src || '').toUpperCase())}</p>
                 </div>
-                <button type="button" class="go" onclick="event.stopPropagation(); playMovie('${m.slug}')">
+                <button type="button" class="go" onclick="event.stopPropagation(); playMovie('${m.slug}', '${m._src || ''}')">
                     <i class="fa-solid fa-play"></i> Xem ngay
                 </button>
             `;
@@ -6614,11 +6616,11 @@ function escapeHtml(text) {
             }
             row.className = 'reco-row';
             row.innerHTML = list.map(m => `
-                <div class="reco-card" onclick="viewMovieDetail('${m.slug}')">
+                <div class="reco-card" onclick="viewMovieDetail('${m.slug}', '${m._src || ''}')">
                     <img src="${m.poster}" alt="" loading="lazy" onerror="this.src='https://placehold.co/140x210/1a1a1a/666?text=No'">
                     <div class="body">
                         <p class="t">${escapeHtml(m.title)}</p>
-                        <p class="s"><i class="fa-solid fa-star text-amber-400"></i> ${m.rating || 'N/A'} · ${escapeHtml(m.year || '')}</p>
+                        <p class="s"><i class="fa-solid fa-star text-amber-400"></i> ${m.rating || 'N/A'} · ${escapeHtml(m.year || '')} · ${escapeHtml((m._src || '').toUpperCase())}</p>
                         <span class="reco-why">${escapeHtml(whyText(m, signals))}</span>
                     </div>
                 </div>
@@ -6629,7 +6631,7 @@ function escapeHtml(text) {
             const row = document.getElementById('reco-row');
             if (row) {
                 row.className = 'reco-row reco-empty';
-                row.textContent = 'Đang chọn phim phù hợp...';
+                row.textContent = 'Đang tổng hợp đề xuất từ VSMOV + KKPhim...';
             }
             if (shuffle) recoSeed = Date.now();
             try {
@@ -6713,7 +6715,7 @@ function escapeHtml(text) {
                              onerror="this.src='https://placehold.co/150x225/1a1a1a/666?text=No'">
                         <div class="body">
                             <p class="t">${escapeHtml(m.title)}</p>
-                            <p class="s"><i class="fa-solid fa-star text-amber-400"></i> ${m.rating || 'N/A'} · ${escapeHtml(m.year || '')}</p>
+                            <p class="s"><i class="fa-solid fa-star text-amber-400"></i> ${m.rating || 'N/A'} · ${escapeHtml(m.year || '')} · ${escapeHtml((m._src || '').toUpperCase())}</p>
                         </div>
                     </div>
                 `).join('');
@@ -7090,6 +7092,103 @@ function escapeHtml(text) {
       window.addEventListener('resize', check);
     })();
     </script>
+
+
+<div id="roflix-tools-modal" style="display:none;position:fixed;inset:0;z-index:99999;background:#05060bea;overflow:auto;padding:24px 12px">
+ <div style="max-width:760px;margin:30px auto;background:#11131f;border:1px solid #3b3d4d;border-radius:20px;padding:22px;color:#fff;box-shadow:0 25px 80px #000">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2 id="roflix-tools-title" style="font-size:22px;font-weight:800;color:#fbbf24">RoFlix Tools</h2><button onclick="closeRoflixTools()" style="font-size:24px;padding:4px 12px">×</button></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button onclick="openRoflixTools('community')" class="bg-gray-800 rounded-lg px-3 py-2">💬 Cộng đồng</button><button onclick="openRoflixTools('party')" class="bg-gray-800 rounded-lg px-3 py-2">🎬 Watch Party</button><button onclick="openRoflixTools('calendar')" class="bg-gray-800 rounded-lg px-3 py-2">🗓️ Lịch phim</button><button onclick="openRoflixTools('admin')" class="bg-gray-800 rounded-lg px-3 py-2">🛠️ Admin</button></div><div id="roflix-tools-content" style="margin-top:18px"></div>
+ </div>
+</div>
+<script>
+(function(){
+ const $=id=>document.getElementById(id);
+ const read=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch(e){return d}};
+ const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+ window.openRoflixTools=function(which){
+  const modal=$('roflix-tools-modal'), box=$('roflix-tools-content'), title=$('roflix-tools-title'); modal.style.display='block';
+  if(which==='sync'){
+   title.textContent='🔄 Đồng bộ xem tiếp giữa thiết bị';
+   const payload={version:1,updatedAt:new Date().toISOString(),history:read('roflix-watch-history',[]),favorites:read('roflix-favorites',[]),collections:read('roflix-collections',[]),profiles:read('roflix-profiles',[])};
+   box.innerHTML=`<p style="color:#cbd5e1;margin-bottom:12px">Bản HTML tĩnh chưa có máy chủ đồng bộ đám mây. Bạn có thể chuyển dữ liệu an toàn giữa máy bằng mã JSON: xuất trên máy cũ, gửi riêng cho mình, rồi nhập trên máy mới.</p><button class="bg-amber-500 text-black font-bold rounded-xl px-4 py-3" onclick="exportRoFlixSync()">Xuất mã đồng bộ</button><textarea id="roflix-sync-data" rows="7" placeholder="Dán mã đồng bộ vào đây trên thiết bị mới" style="display:block;width:100%;margin:14px 0;background:#080a12;border:1px solid #444;padding:12px;border-radius:12px;color:white"></textarea><button class="bg-emerald-600 font-bold rounded-xl px-4 py-3" onclick="importRoFlixSync()">Nhập / hợp nhất dữ liệu</button><p id="roflix-sync-msg" style="margin-top:12px;color:#a7f3d0"></p>`;
+  } else if(which==='collections'){
+   title.textContent='📚 Bộ sưu tập cá nhân';
+   box.innerHTML=`<p style="color:#cbd5e1;margin-bottom:12px">Tạo nhiều bộ sưu tập và thêm phim bằng slug phim (đường dẫn API). Dữ liệu lưu trên trình duyệt hiện tại.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="rf-col-name" placeholder="Tên bộ sưu tập" style="flex:1;min-width:160px;background:#080a12;border:1px solid #444;padding:12px;border-radius:10px;color:white"><button onclick="createRfCollection()" class="bg-amber-500 text-black font-bold rounded-xl px-4">Tạo</button></div><div id="rf-cols" style="margin-top:16px"></div>`; renderRfCollections();
+  } else if(which==='filters'){
+   title.textContent='🔎 Bộ lọc nâng cao';
+   box.innerHTML=`<p style="color:#cbd5e1">Bộ lọc áp dụng trên danh sách phim đang hiển thị, không phân biệt nguồn đang được chọn (VSMOV/KKPhim). Nhập tiêu chí rồi bấm lọc.</p><div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4"><input id="rf-filter-title" placeholder="Tên phim chứa..." class="bg-black/40 border border-gray-700 rounded-xl p-3"><select id="rf-filter-type" class="bg-black/40 border border-gray-700 rounded-xl p-3"><option value="">Mọi định dạng</option><option>single</option><option>series</option><option>hoathinh</option><option>tvshows</option></select><input id="rf-filter-country" placeholder="Quốc gia (ví dụ: Hàn Quốc)" class="bg-black/40 border border-gray-700 rounded-xl p-3"><input id="rf-filter-year" type="number" placeholder="Năm phát hành" class="bg-black/40 border border-gray-700 rounded-xl p-3"></div><div class="flex gap-2 mt-4"><button onclick="applyRfFilters()" class="bg-amber-500 text-black font-bold rounded-xl px-4 py-3">Lọc danh sách</button><button onclick="clearRfFilters()" class="bg-gray-700 rounded-xl px-4 py-3">Xóa lọc</button></div><p id="rf-filter-note" style="color:#9ca3af;margin-top:12px">Lưu ý: bộ lọc chỉ lọc những phim đã được tải về giao diện hiện tại.</p>`;
+  } else if(which==='community'){
+   title.textContent='💬 Cộng đồng RoFlix';
+   box.innerHTML=`<p style="color:#cbd5e1;margin-bottom:12px">Review và bình luận được lưu cục bộ trên trình duyệt này. Để hiển thị đa người dùng cần triển khai API cộng đồng và cơ sở dữ liệu.</p><input id="rf-community-movie" placeholder="Tên phim hoặc slug" style="width:100%;background:#080a12;border:1px solid #444;padding:12px;border-radius:10px;color:white;margin-bottom:10px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label style="color:#cbd5e1">Đánh giá <select id="rf-community-rating" style="background:#080a12;padding:8px;border-radius:8px;color:white"><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select> / 5</label><input id="rf-community-user" placeholder="Tên hiển thị" style="flex:1;min-width:130px;background:#080a12;border:1px solid #444;padding:10px;border-radius:10px;color:white"></div><textarea id="rf-community-text" rows="3" placeholder="Viết review hoặc bình luận..." style="width:100%;background:#080a12;border:1px solid #444;padding:12px;border-radius:10px;color:white;margin:10px 0"></textarea><button onclick="rfPostCommunity()" class="bg-amber-500 text-black font-bold rounded-xl px-4 py-3">Đăng bài</button><div id="rf-community-feed" style="margin-top:16px"></div>`;renderRfCommunity();
+  } else if(which==='party'){
+   title.textContent='🎬 Watch Party';
+   box.innerHTML=`<p style="color:#cbd5e1">Tạo phòng và chia sẻ mã mời. Bản HTML hiện tại tạo phòng cục bộ; đồng bộ phát/tạm dừng thời gian thực giữa người dùng cần máy chủ WebSocket hoặc dịch vụ realtime.</p><input id="rf-party-title" placeholder="Tên phim / phòng xem" style="width:100%;background:#080a12;border:1px solid #444;padding:12px;border-radius:10px;color:white;margin:12px 0"><button onclick="rfCreateParty()" class="bg-amber-500 text-black font-bold rounded-xl px-4 py-3">Tạo phòng + mã mời</button><div id="rf-party-result" style="margin-top:16px;color:#d1fae5"></div><hr style="border-color:#333;margin:18px 0"><input id="rf-party-join" placeholder="Nhập mã phòng" style="width:100%;background:#080a12;border:1px solid #444;padding:12px;border-radius:10px;color:white;margin-bottom:10px"><button onclick="rfJoinParty()" class="bg-emerald-700 rounded-xl px-4 py-3">Tham gia bằng mã</button><div id="rf-party-status" style="margin-top:12px;color:#cbd5e1"></div>`;
+  } else if(which==='calendar'){
+   title.textContent='🗓️ Lịch phim & nhắc tập mới';
+   box.innerHTML=`<p style="color:#cbd5e1">Thêm lịch nhắc thủ công cho phim đang theo dõi. Thông báo tập mới tự động cần nguồn API lịch phát hành ổn định và tác vụ máy chủ.</p><div style="display:grid;gap:10px;margin-top:12px"><input id="rf-cal-title" placeholder="Tên phim / tập" style="background:#080a12;border:1px solid #444;padding:12px;border-radius:10px;color:white"><input id="rf-cal-date" type="datetime-local" style="background:#080a12;border:1px solid #444;padding:12px;border-radius:10px;color:white"><button onclick="rfAddCalendar()" class="bg-amber-500 text-black font-bold rounded-xl px-4 py-3">Thêm lịch nhắc</button></div><div id="rf-calendar-list" style="margin-top:16px"></div>`;renderRfCalendar();
+  } else if(which==='admin'){
+   title.textContent='🛠️ Bảng quản trị cục bộ';
+   box.innerHTML=`<p style="color:#cbd5e1">Bảng thống kê trên trình duyệt này, không phải hệ thống quản trị máy chủ. Mật khẩu phía client không thể bảo vệ dữ liệu khi phát hành công khai.</p><div id="rf-admin-stats" class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4"></div><div class="mt-4 flex gap-2 flex-wrap"><button onclick="downloadRfAdminReport()" class="bg-amber-500 text-black font-bold rounded-xl px-4 py-3">Xuất báo cáo JSON</button><button onclick="clearRfLocalCache()" class="bg-red-700 font-bold rounded-xl px-4 py-3">Xóa cache RoFlix cục bộ</button></div><p id="rf-admin-note" style="margin-top:12px;color:#fca5a5"></p>`; renderRfAdmin();
+  }
+ };
+ window.rfPostCommunity=function(){const movie=$('rf-community-movie').value.trim(),body=$('rf-community-text').value.trim();if(!movie||!body){alert('Nhập tên phim và nội dung trước khi đăng.');return;}const a=read('roflix-community-posts',[]);a.unshift({id:'p'+Date.now(),movie,user:$('rf-community-user').value.trim()||'Khách RoFlix',rating:Number($('rf-community-rating').value)||5,body,createdAt:new Date().toISOString(),status:'visible'});write('roflix-community-posts',a);$('rf-community-text').value='';renderRfCommunity();};
+ window.renderRfCommunity=function(){const el=$('rf-community-feed');if(!el)return;const a=read('roflix-community-posts',[]);el.innerHTML=a.length?a.map(p=>`<article style="background:#1b1d2b;border:1px solid #37394a;border-radius:12px;padding:14px;margin:9px 0"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>${escRf(p.movie)}</b><span style="color:#fbbf24">${'★'.repeat(Math.max(1,Math.min(5,p.rating||5)))}${'☆'.repeat(5-Math.max(1,Math.min(5,p.rating||5)))}</span></div><small style="color:#9ca3af">${escRf(p.user)} · ${new Date(p.createdAt).toLocaleString()}</small><p style="color:#e5e7eb;margin-top:8px;white-space:pre-wrap">${escRf(p.body)}</p><button onclick="rfDeleteCommunity('${p.id}')" style="color:#fca5a5;font-size:12px;margin-top:6px">Xóa bài trên thiết bị này</button></article>`).join(''):'<p style="color:#9ca3af">Chưa có bài review. Hãy đăng bài đầu tiên!</p>';};window.rfDeleteCommunity=function(id){write('roflix-community-posts',read('roflix-community-posts',[]).filter(p=>p.id!==id));renderRfCommunity();};
+ window.rfCreateParty=function(){const name=$('rf-party-title').value.trim()||'Phòng xem RoFlix';const code='RF-'+Math.random().toString(36).slice(2,7).toUpperCase();const rooms=read('roflix-party-rooms',[]);rooms.unshift({code,name,createdAt:new Date().toISOString()});write('roflix-party-rooms',rooms);$('rf-party-result').innerHTML=`Đã tạo phòng <b>${escRf(name)}</b><br>Mã mời: <strong style="font-size:24px;color:#fbbf24">${code}</strong><br><button onclick="GenUI" style="display:none"></button><button onclick="navigator.clipboard?.writeText('${code}').then(()=>alert('Đã sao chép mã phòng')).catch(()=>{})" class="bg-gray-700 rounded-lg px-3 py-2 mt-2">Sao chép mã</button>`;};window.rfJoinParty=function(){const code=$('rf-party-join').value.trim().toUpperCase();const room=read('roflix-party-rooms',[]).find(r=>r.code===code);$('rf-party-status').textContent=room?`Đã tìm thấy phòng “${room.name}” trên thiết bị này. Phòng chưa thể kết nối người ở thiết bị khác nếu chưa cấu hình backend realtime.`:'Không tìm thấy phòng trên trình duyệt này. Mã phòng cần backend để mời người dùng từ thiết bị khác.';};
+ window.rfAddCalendar=function(){const title=$('rf-cal-title').value.trim(),date=$('rf-cal-date').value;if(!title||!date){alert('Nhập tên phim và ngày giờ.');return;}const a=read('roflix-release-calendar',[]);a.push({id:'cal'+Date.now(),title,date,notified:false});write('roflix-release-calendar',a);$('rf-cal-title').value='';renderRfCalendar();};window.renderRfCalendar=function(){const el=$('rf-calendar-list');if(!el)return;const a=read('roflix-release-calendar',[]).sort((x,y)=>new Date(x.date)-new Date(y.date));el.innerHTML=a.length?a.map(x=>`<div style="background:#1b1d2b;border-radius:12px;padding:12px;margin:8px 0;display:flex;justify-content:space-between;gap:10px"><div><b>${escRf(x.title)}</b><div style="color:#9ca3af;font-size:12px">${new Date(x.date).toLocaleString()}</div></div><button onclick="rfRemoveCalendar('${x.id}')" style="color:#fca5a5">Xóa</button></div>`).join(''):'<p style="color:#9ca3af">Chưa có lịch nhắc.</p>';};window.rfRemoveCalendar=function(id){write('roflix-release-calendar',read('roflix-release-calendar',[]).filter(x=>x.id!==id));renderRfCalendar();};
+ window.closeRoflixTools=()=>{$('roflix-tools-modal').style.display='none'};
+ window.exportRoFlixSync=function(){const data={version:1,updatedAt:new Date().toISOString(),history:read('roflix-watch-history',[]),favorites:read('roflix-favorites',[]),collections:read('roflix-collections',[]),profiles:read('roflix-profiles',[])};$('roflix-sync-data').value=btoa(unescape(encodeURIComponent(JSON.stringify(data))));$('roflix-sync-msg').textContent='Đã tạo mã. Sao chép toàn bộ mã để nhập trên thiết bị khác.';};
+ window.importRoFlixSync=function(){try{const d=JSON.parse(decodeURIComponent(escape(atob($('roflix-sync-data').value.trim()))));if(d.version!==1)throw Error('Phiên bản mã không được hỗ trợ');for(const k of ['history','favorites','collections','profiles']){if(Array.isArray(d[k])){const old=read('roflix-'+(k==='history'?'watch-history':k),[]);const merged=[...old,...d[k]];const key=k==='history'?'slug':(k==='collections'?'id':null);const unique=key?[...new Map(merged.map(x=>[x[key]||JSON.stringify(x),x])).values()]:merged;write('roflix-'+(k==='history'?'watch-history':k),unique);}}$('roflix-sync-msg').textContent='Nhập dữ liệu thành công. Tải lại trang để cập nhật giao diện.';}catch(e){$('roflix-sync-msg').textContent='Mã không hợp lệ hoặc bị lỗi.';}};
+ window.createRfCollection=function(){const name=$('rf-col-name').value.trim();if(!name)return;const a=read('roflix-collections',[]);a.push({id:'c'+Date.now(),name,items:[],createdAt:Date.now()});write('roflix-collections',a);$('rf-col-name').value='';renderRfCollections();};
+ window.renderRfCollections=function(){const a=read('roflix-collections',[]);const el=$('rf-cols');if(!el)return;el.innerHTML=a.length?a.map(c=>`<div style="background:#1b1d2b;border:1px solid #37394a;border-radius:12px;padding:14px;margin:8px 0"><b>${escRf(c.name)}</b><p style="color:#9ca3af;font-size:12px;margin:5px 0">${(c.items||[]).length} phim</p><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="rf-slug-${c.id}" placeholder="Slug phim" style="background:#080a12;border:1px solid #444;padding:8px;border-radius:8px;color:white"><button onclick="addRfMovie('${c.id}')" class="bg-amber-500 text-black rounded-lg px-3">Thêm phim</button><button onclick="deleteRfCollection('${c.id}')" class="bg-red-700 rounded-lg px-3">Xóa bộ</button></div><div style="color:#cbd5e1;font-size:12px;margin-top:8px">${(c.items||[]).map(escRf).join(' · ')||'Chưa có phim'}</div></div>`).join(''):'<p style="color:#9ca3af">Chưa có bộ sưu tập nào.</p>';};
+ window.addRfMovie=function(id){const slug=$('rf-slug-'+id).value.trim();if(!slug)return;const a=read('roflix-collections',[]),c=a.find(x=>x.id===id);if(c&&!c.items.includes(slug))c.items.push(slug);write('roflix-collections',a);renderRfCollections();};window.deleteRfCollection=function(id){write('roflix-collections',read('roflix-collections',[]).filter(x=>x.id!==id));renderRfCollections();};
+ window.applyRfFilters=function(){const title=$('rf-filter-title').value.toLowerCase(),type=$('rf-filter-type').value,country=$('rf-filter-country').value.toLowerCase(),year=$('rf-filter-year').value;let cards=[...document.querySelectorAll('.movie-card, .movie-item, [data-movie-card]')];let shown=0;cards.forEach(el=>{const t=(el.innerText||'').toLowerCase(),d=JSON.stringify(el.dataset||{}).toLowerCase();const ok=(!title||t.includes(title))&&(!type||d.includes(type)||t.includes(type))&&(!country||t.includes(country)||d.includes(country))&&(!year||t.includes(year)||d.includes(year));el.style.display=ok?'':'none';if(ok)shown++;});$('rf-filter-note').textContent=`Đã lọc ${shown}/${cards.length} thẻ phim trong giao diện hiện tại. Nếu nguồn đang phân trang, hãy tải thêm trang để lọc các phim khác.`;};window.clearRfFilters=function(){['rf-filter-title','rf-filter-type','rf-filter-country','rf-filter-year'].forEach(id=>$(id).value='');document.querySelectorAll('.movie-card, .movie-item, [data-movie-card]').forEach(el=>el.style.display='');$('rf-filter-note').textContent='Đã xóa bộ lọc.';};
+ function renderRfAdmin(){const el=$('rf-admin-stats');if(!el)return;const h=read('roflix-watch-history',[]),f=read('roflix-favorites',[]),c=read('roflix-collections',[]),p=read('roflix-community-posts',[]),r=read('roflix-party-rooms',[]),cal=read('roflix-release-calendar',[]);el.innerHTML=[['Lịch sử xem',h.length],['Yêu thích',f.length],['Bộ sưu tập',c.length],['Review/bình luận',p.length],['Phòng đã tạo',r.length],['Lịch nhắc',cal.length]].map(x=>`<div style="background:#1b1d2b;border-radius:14px;padding:18px"><div style="color:#9ca3af">${x[0]}</div><div style="font-size:30px;font-weight:800;color:#fbbf24">${x[1]}</div></div>`).join('');}
+ window.downloadRfAdminReport=function(){const data={generatedAt:new Date().toISOString(),history:read('roflix-watch-history',[]),favorites:read('roflix-favorites',[]),collections:read('roflix-collections',[]),community:read('roflix-community-posts',[]),partyRooms:read('roflix-party-rooms',[]),calendar:read('roflix-release-calendar',[])};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='roflix-admin-report.json';a.click();URL.revokeObjectURL(a.href);};
+ window.clearRfLocalCache=function(){if(!confirm('Xóa cache phim cục bộ? Không xóa tài khoản và lịch sử xem.'))return;Object.keys(localStorage).filter(k=>/^roflix-(cache|api-cache)/i.test(k)).forEach(k=>localStorage.removeItem(k));$('rf-admin-note').textContent='Đã xóa các mục cache có tiền tố roflix-cache / roflix-api-cache nếu có.';};
+ function escRf(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+ // Player enhancement: provide persistent next-episode control; embedded providers may block playback-end events.
+ document.addEventListener('DOMContentLoaded',()=>{const player=$('movie-player');if(!player)return;const host=player.parentElement;if(!host||$('rf-player-controls'))return;const bar=document.createElement('div');bar.id='rf-player-controls';bar.style.cssText='display:flex;gap:10px;flex-wrap:wrap;margin:12px 0';bar.innerHTML='<button onclick="rfPrevEpisode()" class="bg-gray-700 rounded-xl px-4 py-3">⏮ Tập trước</button><button onclick="rfNextEpisode()" class="bg-amber-500 text-black font-bold rounded-xl px-4 py-3">Tập tiếp theo ⏭</button><label style="display:flex;align-items:center;gap:8px;color:#cbd5e1"><input id="rf-auto-next" type="checkbox" checked> Tự chuyển tập (nếu trình phát cho phép)</label>';player.insertAdjacentElement('afterend',bar);});
+ window.rfNextEpisode=function(){const i=(window.currentEpisodeList||[]).findIndex(e=>e.link===$('movie-player')?.src);if(i>=0&&i<currentEpisodeList.length-1)playMovieByIndex(i+1);else if(currentEpisodeList.length>1)playMovieByIndex(Math.min(currentEpisodeList.length-1,(window.rfLastEpisodeIndex||0)+1));};window.rfPrevEpisode=function(){const i=(window.currentEpisodeList||[]).findIndex(e=>e.link===$('movie-player')?.src);playMovieByIndex(Math.max(0,i-1));};
+})();
+</script>
+
+<!-- RoFlix Cloud Community / Admin: Supabase client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+ const RF_SUPABASE_URL='https://rbbudoccewyvmbkpdfju.supabase.co';
+ const RF_SUPABASE_KEY='sb_publishable_1nT3mLNJhwMlTaHbBB4A7A_MGhr3BsI';
+ if(!window.supabase || !window.supabase.createClient){console.error('Supabase JS chưa tải được.');return;}
+ const sb=window.supabase.createClient(RF_SUPABASE_URL,RF_SUPABASE_KEY);
+ window.rfSupabase=sb;
+ const $=id=>document.getElementById(id);
+ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const status=(id,msg,color='#cbd5e1')=>{const e=$(id);if(e){e.textContent=msg;e.style.color=color;}};
+ async function user(){const {data}=await sb.auth.getUser();return data?.user||null;}
+ async function authBox(target){const u=await user();const el=$(target);if(!el)return;
+  if(u){el.innerHTML=`<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#181a27;padding:12px;border-radius:12px"><span>Đăng nhập: <b>${esc(u.email)}</b></span><button id="rf-cloud-logout" class="bg-gray-700 rounded-lg px-3 py-2">Đăng xuất</button></div>`;
+   $('rf-cloud-logout').onclick=async()=>{await sb.auth.signOut();await authBox(target);if(target==='rf-auth-admin')await renderAdmin();if(target==='rf-auth-community')await renderCommunity();};
+  }else{el.innerHTML=`<div style="background:#181a27;padding:14px;border-radius:12px"><b>Đăng nhập / tạo tài khoản RoFlix</b><div style="display:grid;gap:9px;margin-top:10px"><input id="rf-auth-email" type="email" placeholder="Email" style="background:#080a12;border:1px solid #444;padding:11px;border-radius:9px;color:white"><input id="rf-auth-password" type="password" placeholder="Mật khẩu (ít nhất 6 ký tự)" style="background:#080a12;border:1px solid #444;padding:11px;border-radius:9px;color:white"><div style="display:flex;gap:8px;flex-wrap:wrap"><button id="rf-auth-login" class="bg-emerald-700 rounded-lg px-4 py-2">Đăng nhập</button><button id="rf-auth-signup" class="bg-gray-700 rounded-lg px-4 py-2">Tạo tài khoản</button></div><small id="rf-auth-msg" style="color:#fbbf24"></small></div></div>`;
+   const run=async signup=>{const email=$('rf-auth-email').value.trim(),password=$('rf-auth-password').value;if(!email||password.length<6){status('rf-auth-msg','Nhập email và mật khẩu tối thiểu 6 ký tự.','#fca5a5');return;}const res=signup?await sb.auth.signUp({email,password}):await sb.auth.signInWithPassword({email,password});if(res.error){status('rf-auth-msg',res.error.message,'#fca5a5');return;}status('rf-auth-msg',signup?'Đã gửi yêu cầu tạo tài khoản. Nếu yêu cầu xác minh email, hãy kiểm tra hộp thư.':'Đăng nhập thành công.','#86efac');await authBox(target);if(target==='rf-auth-community')await renderCommunity();if(target==='rf-auth-admin')await renderAdmin();};
+   $('rf-auth-login').onclick=()=>run(false);$('rf-auth-signup').onclick=()=>run(true);
+  }
+ }
+ async function renderCommunity(){const el=$('rf-community-feed');if(!el)return;const u=await user();const {data,error}=await sb.from('community_posts').select('id,movie_title,rating,body,display_name,user_id,created_at').eq('status','visible').order('created_at',{ascending:false}).limit(100);if(error){el.innerHTML=`<p style="color:#fca5a5">Không tải được bài viết: ${esc(error.message)}. Hãy chạy file SQL thiết lập Supabase đi kèm.</p>`;return;}el.innerHTML=data?.length?data.map(p=>`<article style="background:#1b1d2b;border:1px solid #37394a;border-radius:12px;padding:14px;margin:9px 0"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>${esc(p.movie_title)}</b><span style="color:#fbbf24">${'★'.repeat(p.rating||5)}${'☆'.repeat(5-(p.rating||5))}</span></div><small style="color:#9ca3af">${esc(p.display_name||'RoFlix user')} · ${new Date(p.created_at).toLocaleString()}</small><p style="color:#e5e7eb;margin-top:8px;white-space:pre-wrap">${esc(p.body)}</p>${u&&u.id===p.user_id?`<button onclick="rfCloudDeletePost('${p.id}')" style="color:#fca5a5;font-size:12px;margin-top:6px">Xóa bài của tôi</button>`:''}</article>`).join(''):'<p style="color:#9ca3af">Chưa có bài review. Hãy đăng bài đầu tiên!</p>';}
+ window.rfPostCommunity=async function(){const u=await user();if(!u){alert('Bạn cần đăng nhập để đăng bài.');return;}const movie=$('rf-community-movie')?.value.trim(),body=$('rf-community-text')?.value.trim(),rating=Number($('rf-community-rating')?.value)||5,display=($('rf-community-user')?.value.trim()||u.email?.split('@')[0]||'RoFlix user').slice(0,40);if(!movie||!body){alert('Nhập tên phim và nội dung trước khi đăng.');return;}const {error}=await sb.from('community_posts').insert({movie_title:movie.slice(0,160),body:body.slice(0,3000),rating,display_name:display,user_id:u.id});if(error){alert('Không đăng được: '+error.message);return;}$('rf-community-text').value='';await renderCommunity();};
+ window.rfCloudDeletePost=async function(id){if(!confirm('Xóa bài viết này?'))return;const {error}=await sb.from('community_posts').delete().eq('id',id);if(error)alert('Không xóa được: '+error.message);else await renderCommunity();};
+ async function renderAdmin(){const el=$('rf-admin-stats');if(!el)return;const u=await user();if(!u){el.innerHTML='<p style="color:#fca5a5">Hãy đăng nhập bằng tài khoản đã được cấp quyền Admin.</p>';return;}const {data:profile,error:pe}=await sb.from('profiles').select('role,display_name').eq('id',u.id).maybeSingle();if(pe){el.innerHTML=`<p style="color:#fca5a5">${esc(pe.message)}. Chạy SQL setup trước.</p>`;return;}if(profile?.role!=='admin'){el.innerHTML='<p style="color:#fca5a5">Tài khoản này chưa có quyền Admin. Hãy cấp role admin cho user ID trong Supabase SQL Editor theo hướng dẫn.</p>';return;}
+ const [postsRes,usersRes,hiddenRes]=await Promise.all([sb.from('community_posts').select('id,movie_title,body,display_name,status,created_at,user_id').order('created_at',{ascending:false}).limit(200),sb.from('profiles').select('id,display_name,role,created_at').order('created_at',{ascending:false}).limit(300),sb.from('community_posts').select('id',{count:'exact',head:true}).eq('status','hidden')]);
+ if(postsRes.error||usersRes.error){el.innerHTML='<p style="color:#fca5a5">Không tải được dữ liệu quản trị. Kiểm tra SQL/RLS.</p>';return;}
+ el.innerHTML=`<div class="grid grid-cols-1 sm:grid-cols-3 gap-3"><div style="background:#1b1d2b;border-radius:12px;padding:16px">Người dùng<div style="font-size:28px;color:#fbbf24;font-weight:800">${usersRes.data.length}</div></div><div style="background:#1b1d2b;border-radius:12px;padding:16px">Tổng bài tải về<div style="font-size:28px;color:#fbbf24;font-weight:800">${postsRes.data.length}</div></div><div style="background:#1b1d2b;border-radius:12px;padding:16px">Bài ẩn<div style="font-size:28px;color:#fbbf24;font-weight:800">${hiddenRes.count||0}</div></div></div><h3 style="font-size:18px;font-weight:800;margin:20px 0 8px">Quản lý bài cộng đồng</h3><div>${postsRes.data.map(p=>`<article style="background:#1b1d2b;border:1px solid #37394a;border-radius:12px;padding:12px;margin:8px 0"><b>${esc(p.movie_title)}</b> <span style="color:#9ca3af">· ${esc(p.display_name)} · ${esc(p.status)}</span><p style="margin:6px 0;color:#cbd5e1">${esc(p.body).slice(0,350)}</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="bg-gray-700 rounded-lg px-3 py-2" onclick="rfAdminSetPost('${p.id}','${p.status==='visible'?'hidden':'visible'}')">${p.status==='visible'?'Ẩn bài':'Hiện bài'}</button><button class="bg-red-800 rounded-lg px-3 py-2" onclick="rfAdminDeletePost('${p.id}')">Xóa vĩnh viễn</button></div></article>`).join('')||'<p>Chưa có bài viết.</p>'}</div><h3 style="font-size:18px;font-weight:800;margin:20px 0 8px">Quản lý vai trò</h3><p style="color:#9ca3af;font-size:13px">Chỉ Admin hiện tại mới có thể thay đổi vai trò. Không cấp admin cho người không đáng tin cậy.</p><div>${usersRes.data.map(x=>`<div style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#1b1d2b;border-radius:10px;padding:10px;margin:6px 0"><span>${esc(x.display_name||x.id.slice(0,8))} · <small>${esc(x.role||'user')}</small></span><select id="rf-role-${x.id}" style="background:#080a12;color:white;padding:8px;border-radius:8px"><option value="user" ${x.role==='user'?'selected':''}>user</option><option value="admin" ${x.role==='admin'?'selected':''}>admin</option></select><button class="bg-gray-700 rounded-lg px-3 py-2" onclick="rfAdminSetRole('${x.id}')">Lưu vai trò</button></div>`).join('')}</div>`;
+ }
+ window.rfAdminSetPost=async(id,statusVal)=>{const {error}=await sb.from('community_posts').update({status:statusVal}).eq('id',id);if(error)alert(error.message);else renderAdmin();};
+ window.rfAdminDeletePost=async id=>{if(!confirm('Xóa vĩnh viễn bài này?'))return;const {error}=await sb.from('community_posts').delete().eq('id',id);if(error)alert(error.message);else renderAdmin();};
+ window.rfAdminSetRole=async id=>{const role=$('rf-role-'+id)?.value;if(!role)return;if(!confirm('Thay đổi quyền người dùng thành '+role+'?'))return;const {error}=await sb.from('profiles').update({role}).eq('id',id);if(error)alert('Không đổi được vai trò: '+error.message);else{alert('Đã cập nhật vai trò.');renderAdmin();}};
+ const originalOpen=window.openRoflixTools;
+ window.openRoflixTools=function(which){originalOpen(which);if(which==='community'){const box=$('roflix-tools-content');box.insertAdjacentHTML('afterbegin','<div id="rf-auth-community" style="margin-bottom:14px"></div><div style="color:#9ca3af;font-size:12px;margin-bottom:10px">Bài đăng được chia sẻ qua Supabase với người dùng khác. Cần đăng nhập để đăng bài.</div>');authBox('rf-auth-community').then(renderCommunity);}else if(which==='admin'){const box=$('roflix-tools-content');box.innerHTML='<div id="rf-auth-admin" style="margin-bottom:14px"></div><p style="color:#9ca3af;font-size:12px">Khu vực quản trị dữ liệu chung. Truy cập được quyết định bằng role trong database, không phải nút ẩn ở giao diện.</p><div id="rf-admin-stats" class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4"></div>';authBox('rf-auth-admin').then(renderAdmin);}};
+ sb.auth.onAuthStateChange(()=>{if($('rf-auth-community')){authBox('rf-auth-community').then(renderCommunity);}if($('rf-auth-admin')){authBox('rf-auth-admin').then(renderAdmin);}});
+})();
+</script>
 
 </body>
 </html>
